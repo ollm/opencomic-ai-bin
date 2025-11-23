@@ -1,0 +1,72 @@
+import OpenComicAI from './index.mjs';
+
+(async function(){
+
+	console.log('Calculating latency for available models...');
+
+	const images = [
+		'../assets/sample-image-1.jpg',
+		// '../assets/sample-image-2.jpg',
+		// '../assets/sample-image-3.jpg',
+	];
+
+	OpenComicAI.setModelsPath('../assets/models');
+
+	const modelsList = OpenComicAI.modelsList;
+	const latencies : Record<string, number> = {};
+	const latenciesList: number[] = [];
+
+	for(const _model of modelsList)
+	{
+		const model = OpenComicAI.model(_model);
+		const startTime = Date.now();
+
+		for(const image of images)
+		{
+			await OpenComicAI.pipeline(image, '../assets/calculate-latency_'+_model+'.jpg', [
+				{
+					model: _model,
+					scale: 4,
+				}
+			], false, {
+				start: () => {
+
+					console.log(`Start download model: ${model.name}`);
+
+				},
+				progress: (progress) => {
+
+					console.log(`Downloading model: ${model.name} - ${Math.round(progress * 100)}%`);
+
+				},
+				end: () => {
+
+					console.log(`End download model: ${model.name}`);
+
+				},
+			});
+		}
+
+		const endTime = Date.now();
+		const latency = endTime - startTime;
+		console.log(`Model: ${model.name}, Latency: ${latency} ms`);
+		latencies[model.name] = latency;
+		latenciesList.push(latency);
+	}
+
+	// Min latency as 0.5 value max as 10
+	const minLatency = Math.min(...latenciesList);
+	const maxLatency = Math.max(...latenciesList);
+
+	for(const modelName in latencies)
+	{
+		const latency = latencies[modelName];
+		const normalizedLatency = (latency - minLatency) / (maxLatency - minLatency);
+		const scaledLatency = 0.5 + normalizedLatency * (10 - 0.5);
+		latencies[modelName] = Math.round(scaledLatency * 100) / 100;
+	}
+
+	console.log('Latency calculation completed.');
+	console.log('Latencies:', latencies);
+
+})();

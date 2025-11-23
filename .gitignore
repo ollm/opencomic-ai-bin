@@ -1,0 +1,7 @@
+node_modules
+dist
+assets
+!assets/example.jpg
+
+# OSX
+.DS_Store
