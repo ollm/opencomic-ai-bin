@@ -29,7 +29,7 @@ export type Formats =
 
 export type ModelType = 'upscale' | 'descreen' | 'artifact-removal';
 export type Upscaler = 'realcugan' | 'waifu2x' | 'upscayl';
-export type Speed = 'Very Fast' | 'Fast' | 'Moderate' | 'Slow' | 'Very Slow';
+export type Speed = 'Very Fast' | 'Fast' | 'Medium' | 'Slow' | 'Very Slow';
 
 export interface UpscalerObject {
 	name: string;
@@ -499,7 +499,7 @@ const modelSpeed = (latency: number): Speed => {
 	else if(latency <= 4)
 		return 'Fast';
 	else if(latency <= 7)
-		return 'Moderate';
+		return 'Medium';
 	else if(latency <= 10)
 		return 'Slow';
 	else

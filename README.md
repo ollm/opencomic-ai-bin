@@ -163,14 +163,14 @@ type Upscaler = 'realcugan' | 'upscayl' | 'waifu2x';
 ### `Speed`
 
 ```typescript
-type Speed = 'Very Fast' | 'Fast' | 'Moderate' | 'Slow' | 'Very Slow';
+type Speed = 'Very Fast' | 'Fast' | 'Medium' | 'Slow' | 'Very Slow';
 ```
 
 ### `OpenComicAIOptions`
 
 ```typescript
 interface OpenComicAIOptions {
-	model?: Model | string;
+	model?: Model;
 	noise?: 0 | 1 | 2 | 3;
 	scale?: number;
 	tileSize?: number;
@@ -190,7 +190,7 @@ interface ModelObject {
 	type?: ModelType;
 	scales: number[];
 	noise: number[] | undefined;
-	latency: number;
+	latency: number; // From 0.5 (Fatest model) to 10 (Slowest model)
 	speed?: Speed;
 	folder: string;
 	path?: string;
