@@ -125,6 +125,7 @@ OpenComicAI.model(model: Model): ModelObject
 ```
 
 ### OpenComicAI.pipeline
+
 Process an image through one or more AI models.
 
 ```ts
@@ -135,6 +136,14 @@ OpenComicAI.pipeline(
 	progress?: (progress: number) => void,
 	downloading?: Downloading
 ): Promise<string>
+```
+
+### OpenComicAI.closest
+
+Returns the value in the array closest to the target value.
+
+```ts
+OpenComicAI.closest(array: number[], target: number): number
 ```
 
 ## Types

@@ -787,7 +787,7 @@ export default class OpenComicAI {
 
 	}
 
-	private static closest = (array: number[], target: number): number => {
+	public static closest = (array: number[], target: number): number => {
 
 		return array.reduce((prev, curr) => {
 			return Math.abs(curr - target) < Math.abs(prev - target) ? curr : prev;
