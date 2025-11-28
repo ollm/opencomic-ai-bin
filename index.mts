@@ -892,7 +892,7 @@ export default class OpenComicAI {
 			'-i', source,
 			'-o', dest,
 			'-m', modelInfo?.path as string,
-			//  ...(format ? ['-f', format] : []),
+			// ...(format ? ['-f', format] : []),
 			...(threads ? ['-j', `${threads}:${threads}:${threads}`] : []),
 			...(noise !== false ? ['-n', noise.toString()] : []),
 			...(scale ? ['-s', scale.toString()] : []),
@@ -918,6 +918,7 @@ export default class OpenComicAI {
 			case 'upscayl':
 
 				args.push('-n', model);
+				args.push('-z', Math.max(...modelInfo.scales).toString()); // Set model scale, upscayl is not detected correctly in Windows
 
 				break;
 		}
