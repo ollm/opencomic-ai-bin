@@ -31,6 +31,9 @@ import OpenComicAI from 'opencomic-ai-bin';
 
 (async () => {
 
+	// Set the base directory for binary paths, for example change to app.asar.unpacked path in Electron apps
+	OpenComicAI.setDirname(OpenComicAI.__dirname.replace(/app(-(?:arm64|x64))?\.asar/, 'app$1.asar.unpacked'));
+
 	// Models path, if the model is not found in this folder, it will be downloaded
 	OpenComicAI.setModelsPath('./models');
 
@@ -68,12 +71,28 @@ import OpenComicAI from 'opencomic-ai-bin';
 })();
 ```
 
+### OpenComicAI.setDirname
+
+Set the base directory for binary paths.
+
+```ts
+OpenComicAI.setDirname(dirname: string): void
+```
+
 ### OpenComicAI.setModelsPath
 
 Set the directory where models will be downloaded and stored.
 
 ```ts
 OpenComicAI.setModelsPath(path: string): void
+```
+
+### OpenComicAI.\_\_dirname
+
+Get the base directory for binary paths.
+
+```ts
+OpenComicAI.__dirname: string
 ```
 
 ### OpenComicAI.models

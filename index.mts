@@ -566,6 +566,7 @@ export default class OpenComicAI {
 	public static modelsList = modelsList;
 	public static modelsTypeList = modelsTypeList;
 	public static modelsPath: string | undefined = undefined;
+	public static __dirname = ___dirname;
 
 	private static resolve = (path: string): string => {
 
@@ -592,6 +593,12 @@ export default class OpenComicAI {
 
 	}
 
+	public static setDirname = (dirname: string): void => {
+
+		OpenComicAI.__dirname = OpenComicAI.resolve(dirname);
+
+	}
+
 	public static model = (model: Model = DEFAULT_MODEL): ModelObject => {
 
 		if(!modelsList.includes(model as Model))
@@ -612,7 +619,7 @@ export default class OpenComicAI {
 		if(!modelsList.includes(model as Model))
 			throw new Error(`Model not found: ${model}`);
 
-		const base = p.join(___dirname, '..');
+		const base = p.join(OpenComicAI.__dirname, '..');
 
 		const upscaler = OpenComicAI.model(model as Model).upscaler;
 		const result = upscalers[upscaler].platforms[process.platform]?.[process.arch] ?? upscalers[upscaler].platforms[process.platform]?.x64 ?? upscalers[upscaler].platforms.linux?.x64 ?? '';
