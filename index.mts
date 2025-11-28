@@ -212,7 +212,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'waifu2x-models-cunet': {
 			name: 'Waifu2x CUnet',
 			upscaler: 'waifu2x',
-			scales: [1, 2, 4, 8, 16, 32],
+			scales: [/*1, */2, 4, 8, 16, 32],
 			noise: [0, 1, 2, 3],
 			latency: 2.92,
 			folder: './waifu2x/models-cunet',
@@ -240,7 +240,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'waifu2x-models-upconv': {
 			name: 'Waifu2x UpConv',
 			upscaler: 'waifu2x',
-			scales: [1, 2, 4, 8, 16, 32],
+			scales: [/*1, */2, 4, 8, 16, 32],
 			noise: [0, 1, 2, 3],
 			latency: 0.8,
 			folder: './waifu2x/models-upconv_7_anime_style_art_rgb',
