@@ -246,6 +246,7 @@ Model | Name | Upscaler | Source
 `1x_NMKD-Jaywreck3-Lite_320k` | NMKD Jaywreck3 Lite | `upscayl` | [NMKD.de](https://nmkd.de/?esrgan)
 `1x_NMKD-Jaywreck3-Soft-Lite_320k` | NMKD Jaywreck3 Soft Lite | `upscayl` | [NMKD.de](https://nmkd.de/?esrgan)
 `1x-SaiyaJin-DeJpeg` | SaiyaJin DeJpeg | `upscayl` | [OpenModelDB](https://openmodeldb.info/models/1x-SaiyaJin-DeJpeg)
+`1x_JPEGDestroyerV2_96000G` | JPEG Destroyer V2 | `upscayl` | [Hugging Face](https://huggingface.co/utnah/esrgan)
 
 ### Descreen
 
@@ -269,6 +270,9 @@ Model | Name | Upscaler | Source
 `remacri-4x` | Remacri | `upscayl` | [upscayl/upscayl](https://github.com/upscayl/upscayl/tree/d6e9a36b894d302e6268dc239e8a51ff29c49ded/resources/models)
 `ultramix-balanced-4x` | Ultramix Balanced | `upscayl` | [upscayl/upscayl](https://github.com/upscayl/upscayl/tree/d6e9a36b894d302e6268dc239e8a51ff29c49ded/resources/models)
 `ultrasharp-4x` | Ultrasharp | `upscayl` | [upscayl/upscayl](https://github.com/upscayl/upscayl/tree/d6e9a36b894d302e6268dc239e8a51ff29c49ded/resources/models)
+`4xInt-RemAnime` | Int-RemAnime | `upscayl` | [Phhofm/models](https://github.com/Phhofm/models)
+`AI-Forever_x4plus` | AI-Forever x4plus | `upscayl` | [Hugging Face](https://huggingface.co/leonelhs/realesrgan)
+`4xNomosWebPhoto_esrgan` | Nomos Web Photo ESRGAN | `upscayl` | [OpenModelDB](https://openmodeldb.info/models/4x-NomosWebPhoto-esrgan)
 `4xHFA2k` | HFA2k | `upscayl` | [upscayl/custom-models](https://github.com/upscayl/custom-models/tree/4b6d2cfa59c7442af115dfc6e50fd8d7d40b96ef/models)
 `4xLSDIRCompactC3` | LSDIR Compact C3 | `upscayl` | [upscayl/custom-models](https://github.com/upscayl/custom-models/tree/4b6d2cfa59c7442af115dfc6e50fd8d7d40b96ef/models)
 `4xLSDIRplusC` | LSDIR Plus C | `upscayl` | [upscayl/custom-models](https://github.com/upscayl/custom-models/tree/4b6d2cfa59c7442af115dfc6e50fd8d7d40b96ef/models)

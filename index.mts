@@ -317,6 +317,42 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 				'2x-AnimeSharpV4_RCAN_fp16_op17.param',
 			],
 		},*/
+		'4xInt-RemAnime': {
+			name: 'Int-RemAnime',
+			upscaler: 'upscayl',
+			scales: [2, 3, 4],
+			noise: undefined,
+			latency: 7.26,
+			folder: './models',
+			files: [
+				'4xInt-RemAnime.bin',
+				'4xInt-RemAnime.param',
+			],
+		},
+		'AI-Forever_x4plus': {
+			name: 'AI-Forever x4plus',
+			upscaler: 'upscayl',
+			scales: [2, 3, 4],
+			noise: undefined,
+			latency: 7.77,
+			folder: './models',
+			files: [
+				'AI-Forever_x4plus.bin',
+				'AI-Forever_x4plus.param',
+			],
+		},
+		'4xNomosWebPhoto_esrgan': {
+			name: 'Nomos Web Photo ESRGAN',
+			upscaler: 'upscayl',
+			scales: [2, 3, 4],
+			noise: undefined,
+			latency: 7.29,
+			folder: './models',
+			files: [
+				'4xNomosWebPhoto_esrgan.bin',
+				'4xNomosWebPhoto_esrgan.param',
+			],
+		},
 		'4xHFA2k': {
 			name: 'HFA2k',
 			upscaler: 'upscayl',
@@ -487,6 +523,18 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			files: [
 				'1x-SaiyaJin-DeJpeg.bin',
 				'1x-SaiyaJin-DeJpeg.param',
+			],
+		},
+		'1x_JPEGDestroyerV2_96000G': {
+			name: 'JPEG Destroyer V2',
+			upscaler: 'upscayl',
+			scales: [1],
+			noise: undefined,
+			latency: 6.37,
+			folder: './models',
+			files: [
+				'1x_JPEGDestroyerV2_96000G.bin',
+				'1x_JPEGDestroyerV2_96000G.param',
 			],
 		},
 	},
