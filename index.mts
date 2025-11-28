@@ -599,7 +599,7 @@ export interface Downloading {
 }
 
 const DEFAULT_MODEL: Model = 'realcugan';
-const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/db60a923bfab0afccee4e478b2ca6666ec75fdb4/models/';
+const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/476007f6e316c7471173af573d0e1ec7e6a941e1/models/';
 
 const modelsList: Model[] = [...Object.keys(models.upscale) as Model[], ...Object.keys(models.descreen) as Model[], ...Object.keys(models['artifact-removal']) as Model[]];
 const modelsTypeList: Record<ModelType, Model[]> = {
