@@ -817,6 +817,8 @@ export default class OpenComicAI {
 
 		await OpenComicAI.getModels(steps, downloading);
 
+		const _source: string = source;
+
 		const parsed = p.parse(dest);
 		let prevIntermediateDest: string = '';
 
@@ -850,16 +852,50 @@ export default class OpenComicAI {
 		if(OpenComicAI.sharp)
 		{
 			// Read metadata (including ICC profile) from source image
-			const srcMetadata = await OpenComicAI.sharp(source).metadata();
+			const srcMetadata = await OpenComicAI.sharp(_source).metadata();
 
 			if(srcMetadata.icc)
 			{
 				const iccPath = p.join(p.dirname(dest), `${crypto.randomUUID()}.icc`);
+				const iccImagePath = p.join(p.dirname(dest), `${crypto.randomUUID()}${parsed.ext}`);
+
 				await fsp.writeFile(iccPath, srcMetadata.icc);
 
 				// Apply ICC profile
-				await OpenComicAI.sharp(dest).pipelineColourspace(OpenComicAI.pipelineColourspace).withIccProfile(iccPath).toFile(dest);
-				fsp.unlink(iccPath);
+				let sharp = await OpenComicAI.sharp(dest).pipelineColourspace(OpenComicAI.pipelineColourspace).withIccProfile(iccPath);
+
+				const ext = parsed.ext.toLowerCase();
+
+				switch(ext)
+				{
+					case '.jpg':
+					case '.jpeg':
+					case '.jpe':
+
+						sharp = sharp.jpeg({quality: 100, force: true});
+
+						break;
+
+					case 'webp':
+
+						sharp = sharp.webp({quality: 100, force: true});
+
+						break;
+
+					default:
+
+						sharp.png({compressionLevel: 0, force: true});
+
+						break;
+				}
+
+				await sharp.toFile(iccImagePath);
+
+				// Replace dest with iccImagePath
+				await fsp.unlink(dest);
+				fs.renameSync(iccImagePath, dest);
+
+				await fsp.unlink(iccPath);
 			}
 		}
 
