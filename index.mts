@@ -615,6 +615,8 @@ export default class OpenComicAI {
 	public static modelsTypeList = modelsTypeList;
 	public static modelsPath: string | undefined = undefined;
 	public static __dirname = ___dirname;
+	public static sharp: any = false;
+	public static pipelineColourspace: string | false = false;
 
 	private static resolve = (path: string): string => {
 
@@ -801,6 +803,13 @@ export default class OpenComicAI {
 
 	}
 
+	public static keepIccProfile = (sharp: any, pipelineColourspace: string = 'rgb16'): void => {
+
+		OpenComicAI.sharp = sharp;
+		OpenComicAI.pipelineColourspace = pipelineColourspace;
+
+	}
+
 	public static pipeline = async (source: string, dest: string, steps: OpenComicAIOptions[], progress?: ((progress?: number) => void) | false, downloading?: Downloading | false): Promise<string> => {
 
 		if(!OpenComicAI.modelsPath)
@@ -836,6 +845,22 @@ export default class OpenComicAI {
 
 			source = intermediateDest;
 			prevIntermediateDest = OpenComicAI.resolve(intermediateDest);
+		}
+
+		if(OpenComicAI.sharp)
+		{
+			// Read metadata (including ICC profile) from source image
+			const srcMetadata = await OpenComicAI.sharp(source).metadata();
+
+			if(srcMetadata.icc)
+			{
+				const iccPath = p.join(p.dirname(dest), `${crypto.randomUUID()}.icc`);
+				await fsp.writeFile(iccPath, srcMetadata.icc);
+
+				// Apply ICC profile
+				await OpenComicAI.sharp(dest).pipelineColourspace(OpenComicAI.pipelineColourspace).withIccProfile(iccPath).toFile(dest);
+				fsp.unlink(iccPath);
+			}
 		}
 
 		return source;
@@ -918,7 +943,7 @@ export default class OpenComicAI {
 			case 'upscayl':
 
 				args.push('-n', model);
-				args.push('-z', Math.max(...modelInfo.scales).toString()); // Set model scale, upscayl is not detected correctly in Windows
+				args.push('-z', Math.max(...modelInfo.scales).toString()); // Set model scale, upscayl doesn't detect it correctly on Windows
 
 				break;
 		}

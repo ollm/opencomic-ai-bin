@@ -28,6 +28,7 @@ import OpenComicAI from 'opencomic-ai-bin';
 
 ```ts
 import OpenComicAI from 'opencomic-ai-bin';
+import sharp from 'sharp'; // This is optional, only needed if you want to keep ICC profile
 
 (async () => {
 
@@ -36,6 +37,9 @@ import OpenComicAI from 'opencomic-ai-bin';
 
 	// Models path, if the model is not found in this folder, it will be downloaded
 	OpenComicAI.setModelsPath('./models');
+
+	// Keep ICC profile from input image, requires sharp instance
+	OpenComicAI.keepIccProfile(sharp);
 
 	await OpenComicAI.pipeline('./input.jpg', './output.jpg', [
 		{
@@ -85,6 +89,14 @@ Set the directory where models will be downloaded and stored.
 
 ```ts
 OpenComicAI.setModelsPath(path: string): void
+```
+
+### OpenComicAI.keepIccProfile
+
+Keep the ICC profile from the input image, requires a sharp instance to copy the profile from source to dest.
+
+```ts
+OpenComicAI.keepIccProfile(sharp: any, pipelineColourspace: string = 'rgb16'): void
 ```
 
 ### OpenComicAI.\_\_dirname
