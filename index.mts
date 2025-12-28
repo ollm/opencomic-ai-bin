@@ -1331,7 +1331,8 @@ export default class OpenComicAI {
 				currentSpawn = item.spawn;
 				daemon.processing = true;
 
-				proc.stdin!.write(`${item.source} ${item.dest}\n`);
+				const quote = (str: string): string => `"${str.replace(/"/g, '\\"')}"`;
+				proc.stdin!.write(`${quote(item.source)} ${quote(item.dest)}\n`);
 			}
 			else
 			{
