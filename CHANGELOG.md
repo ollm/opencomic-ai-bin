@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ##### 🚀 New Features
 
-- Add Windows arm64 binary for `upscayl-bin`
+- Add Windows arm64 binary for `upscayl-bin` [`16b3949`](https://github.com/ollm/opencomic-ai-bin/commit/16b3949b2890b42003079f1b63d27cf16b449497)
 
 ##### 🐛 Bug Fixes
 
