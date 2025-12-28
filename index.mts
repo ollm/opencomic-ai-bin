@@ -85,6 +85,7 @@ const upscalers: Record<Upscaler, UpscalerObject> = {
 			},
 			linux: {
 				x64: 'linux/x64/upscayl/upscayl-bin',
+				arm64: 'linux/arm64/upscayl/upscayl-bin',
 			},
 		},
 	},
