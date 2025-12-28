@@ -102,11 +102,33 @@ export interface ModelObject {
 	folder: string;
 	path?: string;
 	files: string[];
+	scaleFiles?: Record<number, Model>;
 	supportCurrentPlatform?: boolean;
 }
 
 let models: Record<ModelType, Record<string, ModelObject>> = {
 	upscale: {
+		/*'opencomic-ai-upscale-lite': {
+			name: 'OpenComic AI Upscale Lite',
+			upscaler: 'upscayl',
+			scales: [2/*, 3, 4* /],
+			noise: undefined,
+			latency: 0.0,
+			folder: './models',
+			files: [
+				'opencomic-ai-upscale-2x-lite.bin',
+				'opencomic-ai-upscale-2x-lite.param',/*
+				'opencomic-ai-upscale-3x-lite.bin',
+				'opencomic-ai-upscale-3x-lite.param',
+				'opencomic-ai-upscale-4x-lite.bin',
+				'opencomic-ai-upscale-4x-lite.param',* /
+			],
+			scaleFiles: {
+				2: 'opencomic-ai-upscale-2x-lite',
+				3: 'opencomic-ai-upscale-3x-lite',
+				4: 'opencomic-ai-upscale-4x-lite',
+			},
+		},*/
 		/*'realcugan-nose': {
 			name: 'RealCUGAN NoSE',
 			upscaper: 'realcugan',
@@ -555,6 +577,8 @@ const modelSpeed = (latency: number): Speed => {
 
 }
 
+let scalesModels: Record<string, number> = {};
+
 const parseModels = (models: Record<string, ModelObject>, type: ModelType): Record<string, ModelObject> => {
 
 	const parsedModels: Record<string, ModelObject> = {};
@@ -568,6 +592,15 @@ const parseModels = (models: Record<string, ModelObject>, type: ModelType): Reco
 			speed: modelSpeed(model.latency),
 			supportCurrentPlatform: upscalers[model.upscaler].platforms[process.platform]?.[process.arch] ? true : false,
 		};
+
+		if(model.scaleFiles)
+		{
+			for(const scale in model.scaleFiles)
+			{
+				const _model = model.scaleFiles[scale];
+				scalesModels[_model] = +scale;
+			}
+		}
 	}
 
 	return parsedModels;
@@ -579,7 +612,7 @@ models = {
 	'artifact-removal': parseModels(models['artifact-removal'], 'artifact-removal'),
 };
 
-export type Model = keyof typeof models.upscale & keyof typeof models.descreen & keyof typeof models['artifact-removal'];
+export type Model = keyof typeof models.upscale & keyof typeof models.descreen & keyof typeof models['artifact-removal'] & keyof typeof scalesModels;
 
 export interface OpenComicAIOptions {
 	model?: Model;
@@ -598,8 +631,32 @@ export interface Downloading {
 	end?: () => void;
 }
 
+interface Spawn {
+	data: (data: any) => void;
+	error: (error: any) => void;
+	close: (close: any) => void;
+}
+
+interface DaemonQueue {
+	source: string;
+	dest: string;
+	spawn: Spawn;
+}
+
+interface Daemon {
+	key: string;
+	proc: ReturnType<typeof spawn>;
+	lastUsed: number;
+	queue: DaemonQueue[],
+	processing: boolean;
+	close: () => void;
+	push: (source: string, dest: string, spawn: Spawn) => void;
+}
+
 const DEFAULT_MODEL: Model = 'realcugan';
 const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/476007f6e316c7471173af573d0e1ec7e6a941e1/models/';
+
+const DAEMON_UPSCALERS: Upscaler[] = ['upscayl'];
 
 const modelsList: Model[] = [...Object.keys(models.upscale) as Model[], ...Object.keys(models.descreen) as Model[], ...Object.keys(models['artifact-removal']) as Model[]];
 const modelsTypeList: Record<ModelType, Model[]> = {
@@ -617,6 +674,10 @@ export default class OpenComicAI {
 	public static __dirname = ___dirname;
 	public static sharp: any = false;
 	public static pipelineColourspace: string | false = false;
+
+	private static daemons: Map<string, Daemon> = new Map();
+	public static concurrentDaemons: number = 3;
+	public static daemonIdleTimeout: number = 60000; // 60 seconds
 
 	private static resolve = (path: string): string => {
 
@@ -646,6 +707,64 @@ export default class OpenComicAI {
 	public static setDirname = (dirname: string): void => {
 
 		OpenComicAI.__dirname = OpenComicAI.resolve(dirname);
+
+	}
+
+	public static setConcurrentDaemons = (count: number = 3): void => {
+
+		OpenComicAI.concurrentDaemons = count;
+
+	}
+
+	public static setDaemonIdleTimeout = (timeout: number = 60000): void => {
+
+		OpenComicAI.daemonIdleTimeout = timeout;
+
+	}
+
+	public static closeAllDaemons = (): void => {
+
+		for(const daemon of OpenComicAI.daemons.values())
+		{
+			// daemon.proc.kill();
+			daemon.close();
+		}
+
+		OpenComicAI.daemons.clear();
+
+	}
+
+	private static closeOldDaemons = (): void => {
+
+		if(OpenComicAI.daemons.size <= OpenComicAI.concurrentDaemons)
+			return;
+
+		let daemons: Daemon[] = [...OpenComicAI.daemons.values()];
+		daemons.sort((a, b) => a.lastUsed - b.lastUsed);
+
+		const toClose = daemons.length - OpenComicAI.concurrentDaemons;
+		let closed = 0;
+
+		for(let i = 0, len = daemons.length; i < len; i++)
+		{
+			if(closed >= toClose)
+				break;
+
+			const daemon = daemons[i];
+
+			if(!daemon.queue.length && !daemon.processing)
+			{
+				daemon.close();
+				closed++;
+			}
+		}
+
+	}
+
+	public static keepIccProfile = (sharp: any, pipelineColourspace: string = 'rgb16'): void => {
+
+		OpenComicAI.sharp = sharp;
+		OpenComicAI.pipelineColourspace = pipelineColourspace;
 
 	}
 
@@ -803,13 +922,6 @@ export default class OpenComicAI {
 
 	}
 
-	public static keepIccProfile = (sharp: any, pipelineColourspace: string = 'rgb16'): void => {
-
-		OpenComicAI.sharp = sharp;
-		OpenComicAI.pipelineColourspace = pipelineColourspace;
-
-	}
-
 	public static pipeline = async (source: string, dest: string, steps: OpenComicAIOptions[], progress?: ((progress?: number) => void) | false, downloading?: Downloading | false): Promise<string> => {
 
 		if(!OpenComicAI.modelsPath)
@@ -903,6 +1015,37 @@ export default class OpenComicAI {
 
 	}
 
+	public static preload = async (steps: OpenComicAIOptions[], downloading?: Downloading | false): Promise<void> => {
+
+		await OpenComicAI.getModels(steps, downloading);
+
+		const promises: Promise<void>[] = [];
+
+		for(let i = 0, len = steps.length; i < len; i++)
+		{
+			const step = steps[i];
+
+			if(!step.model)
+				step.model = DEFAULT_MODEL;
+
+			if(!modelsList.includes(step.model as Model))
+				throw new Error(`Model not found: ${step.model}`);
+
+			const binary = OpenComicAI.binary(step.model);
+			const modelInfo = OpenComicAI.model(step.model);
+
+			const args: string[] = OpenComicAI.args(step);
+			args.unshift('-o', '');
+			args.unshift('-i', '');
+
+			if(DAEMON_UPSCALERS.includes(modelInfo.upscaler) && OpenComicAI.concurrentDaemons > 0)
+				promises.push(OpenComicAI.spawnDaemon(binary, args));
+		}
+
+		await Promise.all(promises);
+
+	}
+
 	public static closest = (array: number[], target: number): number => {
 
 		return array.reduce((prev, curr) => {
@@ -911,25 +1054,15 @@ export default class OpenComicAI {
 
 	}
 
-	private static image = async (source: string, dest: string, options?: OpenComicAIOptions, progress?: ((progress?: number) => void) | false): Promise<string> => {
+	private static args = (options: OpenComicAIOptions): string[] => {
 
 		options = {...options};
-
-		source = OpenComicAI.resolve(source);
-		dest = OpenComicAI.resolve(dest);
-
-		const {dir, name} = p.parse(dest);
 
 		if(!options.model)
 			options.model = DEFAULT_MODEL;
 
 		if(!modelsList.includes(options.model as Model))
 			throw new Error(`Model not found: ${options.model}`);
-
-		const folder = p.dirname(dest);
-
-		if(!fs.existsSync(folder))
-			await fsp.mkdir(folder, {recursive: true});
 
 		const binary = OpenComicAI.binary(options.model);
 		const modelInfo = OpenComicAI.model(options.model);
@@ -950,8 +1083,6 @@ export default class OpenComicAI {
 			scale = OpenComicAI.closest(modelInfo.scales, scale);
 
 		const args: string[] = [
-			'-i', source,
-			'-o', dest,
 			'-m', modelInfo?.path as string,
 			// ...(format ? ['-f', format] : []),
 			...(threads ? ['-j', `${threads}:${threads}:${threads}`] : []),
@@ -978,11 +1109,49 @@ export default class OpenComicAI {
 
 			case 'upscayl':
 
-				args.push('-n', model);
-				args.push('-z', Math.max(...modelInfo.scales).toString()); // Set model scale, upscayl doesn't detect it correctly on Windows
+				let modelName: Model = model;
+				let modelScale: string = Math.max(...modelInfo.scales).toString();
+
+				if(modelInfo.scaleFiles && scale)
+				{
+					modelName = modelInfo.scaleFiles[scale];
+					modelScale = scale.toString();
+				}
+
+				args.push('-n', modelName);
+				args.push('-z', modelScale); // Set model scale, upscayl doesn't detect it correctly on Windows
 
 				break;
 		}
+
+		return args;
+
+	}
+
+	private static image = async (source: string, dest: string, options?: OpenComicAIOptions, progress?: ((progress?: number) => void) | false): Promise<string> => {
+
+		options = {...options};
+
+		if(!options.model)
+			options.model = DEFAULT_MODEL;
+
+		if(!modelsList.includes(options.model as Model))
+			throw new Error(`Model not found: ${options.model}`);
+
+		const binary = OpenComicAI.binary(options.model);
+		const modelInfo = OpenComicAI.model(options.model);
+
+		source = OpenComicAI.resolve(source);
+		dest = OpenComicAI.resolve(dest);
+
+		const folder = p.dirname(dest);
+
+		if(!fs.existsSync(folder))
+			await fsp.mkdir(folder, {recursive: true});
+
+		const args: string[] = OpenComicAI.args(options);
+		args.unshift('-o', dest);
+		args.unshift('-i', source);
 
 		let result = '';
 
@@ -990,50 +1159,217 @@ export default class OpenComicAI {
 
 		return new Promise<string>((resolve, reject) => {
 
-			const proc = spawn(binary, args);
+			const _spawn = DAEMON_UPSCALERS.includes(modelInfo.upscaler) && OpenComicAI.concurrentDaemons > 0 ? OpenComicAI.spawnDaemon : OpenComicAI.spawn;
 
-			proc.stderr.on('data', (data) => {
+			_spawn(binary, args, {
+				data: (data) => {
 
-				data = data.toString();
-				result += data;
+					data = data.toString();
+					result += data;
 
-				if(!progress)
-					return;
+					if(!progress)
+						return;
 
-				const match = data.match(/([\d\.\,]+)%/);
+					const match = data.match(/([\d\.\,]+)%/);
 
-				if(match)
-				{
-					const percent = +(match[1].replace(',', '.'));
-					const _progress = Math.min(Math.max(percent / 100, 0), 1);
-					progress(_progress);
+					if(match)
+					{
+						const percent = +(match[1].replace(',', '.'));
+						const _progress = Math.min(Math.max(percent / 100, 0), 1);
+						progress(_progress);
+					}
+
+				},
+				error: (error) => {
+
+					reject(error);
+
+				},
+				close: (code) => {
+
+					if(code === 0)
+					{
+						resolve(dest);
+						return;
+					}
+
+					const lines = result.split('\n').filter(line => line.trim() !== '');
+					const lastLine = lines[lines.length - 1] || '';
+					const lastLines = lines.slice(-20).join('\n');
+
+					console.error(lastLines);
+					reject(new Error(`Process exited with code ${code}: ${lastLine}`));
+
 				}
-
-			});
-
-			proc.on('error', (error) => {
-
-				reject(error);
-
-			});
-
-			proc.on('close', (code) => {
-
-				if(code === 0)
-				{
-					resolve(dest);
-					return;
-				}
-
-				const lines = result.split('\n').filter(line => line.trim() !== '');
-				const lastLine = lines[lines.length - 1] || '';
-				const lastLines = lines.slice(-20).join('\n');
-
-				console.error(lastLines);
-				reject(new Error(`Process exited with code ${code}: ${lastLine}`));
-
 			});
 		});
+	}
+
+	private static spawn = (binary: string, args: string[], {data, error, close}: Spawn): ReturnType<typeof spawn> => {
+
+		const proc = spawn(binary, args);
+
+		proc.stderr.on('data', data);
+		proc.on('error', error);
+		proc.on('close', close);
+
+		return proc;
+
+	}
+
+	private static spawnDaemon = async (binary: string, args: string[], spawn?: Spawn): Promise<void> => {
+
+		const source = args[args.indexOf('-i') + 1] ?? '';
+		const dest = args[args.indexOf('-o') + 1] ?? '';
+
+		args = args.filter((arg: any) => arg !== '-i' && arg !== source && arg !== '-o' && arg !== dest);
+
+		const key: string = [binary, ...args].join(' ');
+
+		if(OpenComicAI.daemons.has(key))
+		{
+			const daemon = OpenComicAI.daemons.get(key) as Daemon;
+			if(spawn) daemon.push(source, dest, spawn);
+		}
+		else
+		{
+			return new Promise<void>((resolve) => {
+
+				const daemon: Daemon = OpenComicAI.daemon(key, binary, args, resolve);
+				if(spawn) daemon.push(source, dest, spawn);
+
+			});
+		}
+
+		return;
+
+	}
+
+	private static daemon = (key: string, binary: string, args: string[], onReady?: () => void): Daemon => {
+
+		let daemon: Daemon;
+
+		args.push('-d');
+
+		const queue: DaemonQueue[] = [];
+		let modelLoaded = false;
+		let idleTimer: NodeJS.Timeout;
+		let currentSpawn: Spawn | null = null;
+
+		const proc = OpenComicAI.spawn(binary, args, {
+			data: (data) => {
+
+				data = data.toString();
+				const ready = /Ready\>/.test(data);
+
+				if(ready && !modelLoaded && !currentSpawn) // First ready
+				{
+					modelLoaded = true;
+					process();
+					if(onReady) onReady();
+				}
+				else if(modelLoaded && currentSpawn)
+				{
+					currentSpawn.data(data);
+
+					if(ready)
+					{
+						currentSpawn.close(0);
+						currentSpawn = null;
+						daemon.processing = false;
+						process();
+					}
+				}
+
+			},
+			error: (error) => {
+
+				if(currentSpawn)
+					currentSpawn.error(error);
+
+			},
+			close: (code) => {
+
+				if(currentSpawn)
+					currentSpawn.close(code);
+
+				OpenComicAI.daemons.delete(key);
+
+			}
+		});
+
+		let closing = false;
+
+		const close = () => {
+
+			if(closing)
+				return;
+
+			OpenComicAI.daemons.delete(key);
+
+			clearTimeout(idleTimer);
+			proc.stdin!.write(`quit\n`);
+
+			closing = true;
+
+			// proc.stdin!.end();
+			// proc.kill();
+
+		}
+
+		const process = () => {
+
+			clearTimeout(idleTimer);
+
+			if(currentSpawn || !modelLoaded)
+				return;
+
+			if(queue.length)
+			{
+				const item = queue.shift() as DaemonQueue;
+				currentSpawn = item.spawn;
+				daemon.processing = true;
+
+				proc.stdin!.write(`${item.source} ${item.dest}\n`);
+			}
+			else
+			{
+				if(OpenComicAI.daemons.size > OpenComicAI.concurrentDaemons)
+				{
+					OpenComicAI.closeOldDaemons();
+					return;
+				}
+
+				idleTimer = setTimeout(() => {
+
+					close();
+
+				}, OpenComicAI.daemonIdleTimeout);
+			}
+
+		}
+
+		const push = (source: string, dest: string, spawn: Spawn) => {
+
+			daemon.lastUsed = Date.now();
+			daemon.queue.push({source, dest, spawn});
+			process();
+
+		}
+
+		daemon = {
+			key,
+			proc,
+			lastUsed: Date.now(),
+			close,
+			processing: false,
+			queue,
+			push,
+		};
+
+		OpenComicAI.daemons.set(key, daemon);
+
+		return daemon;
 
 	}
 }

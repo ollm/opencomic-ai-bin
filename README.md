@@ -91,6 +91,32 @@ Set the directory where models will be downloaded and stored.
 OpenComicAI.setModelsPath(path: string): void
 ```
 
+### OpenComicAI.setConcurrentDaemons
+
+Set the maximum number of concurrent daemons (`upscayl` models only), 0 disables daemons.
+
+Daemons help speed up processing loading model only once and not for each image. [See comparative performance.](#daemon-comparative-performance)
+
+```ts
+OpenComicAI.setConcurrentDaemons(count: number = 3): void
+```
+
+### OpenComicAI.setDaemonIdleTimeout
+
+Set the idle timeout for daemons in milliseconds (`upscayl` models only).
+
+```ts
+OpenComicAI.setDaemonIdleTimeout(timeout: number = 60000): void
+```
+
+### OpenComicAI.closeAllDaemons
+
+Close all running daemons (`upscayl` models only).
+
+```ts
+OpenComicAI.closeAllDaemons(): void
+```
+
 ### OpenComicAI.keepIccProfile
 
 Keep the ICC profile from the input image, requires a sharp instance to copy the profile from source to dest.
@@ -153,6 +179,14 @@ Get detailed information about a specific model.
 
 ```ts
 OpenComicAI.model(model: Model): ModelObject
+```
+
+### OpenComicAI.preload
+
+Preload the model to daemon (`upscayl` models only) or download the model if not available locally.
+
+```ts
+OpenComicAI.preload(steps: OpenComicAIOptions[], downloading?: Downloading): Promise<void>
 ```
 
 ### OpenComicAI.pipeline
@@ -294,6 +328,86 @@ Model | Name | Upscaler | Source
 `RealESRGAN_General_x4_v3` | RealESRGAN General v3 | `upscayl` | [upscayl/custom-models](https://github.com/upscayl/custom-models/tree/4b6d2cfa59c7442af115dfc6e50fd8d7d40b96ef/models)
 `uniscale_restore_x4` | Uniscale Restore x4 | `upscayl` | [upscayl/custom-models](https://github.com/upscayl/custom-models/tree/4b6d2cfa59c7442af115dfc6e50fd8d7d40b96ef/models)
 `unknown-2.0.1` | Unknown 2.0.1 | `upscayl` | [upscayl/custom-models](https://github.com/upscayl/custom-models/tree/4b6d2cfa59c7442af115dfc6e50fd8d7d40b96ef/models)
+
+## Daemon comparative performance
+
+### Table (10 images 512x512px)
+
+Model                          | Disabled              | Enabled              | Disabled vs Enabled
+-------------------------------|-----------------------|----------------------|--------
+OpenComic AI Upscale Lite      | 52.087s               | 7.646s               | 6.81x
+RealESRGAN x4 Plus             | 73.273s               | 23.199s              | 3.16x
+
+### OpenComic AI Upscale Lite
+
+#### Disabled
+
+``` bash
+Processing image 1/10 for model: OpenComic AI Upscale Lite: 2.931s
+Processing image 2/10 for model: OpenComic AI Upscale Lite: 4.464s
+Processing image 3/10 for model: OpenComic AI Upscale Lite: 5.594s
+Processing image 4/10 for model: OpenComic AI Upscale Lite: 5.561s
+Processing image 5/10 for model: OpenComic AI Upscale Lite: 5.521s
+Processing image 6/10 for model: OpenComic AI Upscale Lite: 5.531s
+Processing image 7/10 for model: OpenComic AI Upscale Lite: 5.534s
+Processing image 8/10 for model: OpenComic AI Upscale Lite: 5.555s
+Processing image 9/10 for model: OpenComic AI Upscale Lite: 5.496s
+Processing image 10/10 for model: OpenComic AI Upscale Lite: 5.898s
+Model: OpenComic AI Upscale Lite, Latency: 52.087s
+```
+
+#### Enabled
+
+``` bash
+Preloading model... OpenComic AI Upscale Lite
+Preload model: OpenComic AI Upscale Lite: 473.897ms
+Processing image 1/10 for model: OpenComic AI Upscale Lite: 725.474ms
+Processing image 2/10 for model: OpenComic AI Upscale Lite: 716.566ms
+Processing image 3/10 for model: OpenComic AI Upscale Lite: 716.221ms
+Processing image 4/10 for model: OpenComic AI Upscale Lite: 715.214ms
+Processing image 5/10 for model: OpenComic AI Upscale Lite: 717.894ms
+Processing image 6/10 for model: OpenComic AI Upscale Lite: 715.236ms
+Processing image 7/10 for model: OpenComic AI Upscale Lite: 716.296ms
+Processing image 8/10 for model: OpenComic AI Upscale Lite: 714.025ms
+Processing image 9/10 for model: OpenComic AI Upscale Lite: 718.653ms
+Processing image 10/10 for model: OpenComic AI Upscale Lite: 714.792ms
+Model: OpenComic AI Upscale Lite, Latency: 7.646s
+```
+
+### RealESRGAN x4 Plus
+
+#### Disabled
+
+``` bash
+Processing image 1/10 for model: RealESRGAN x4 Plus: 6.473s
+Processing image 2/10 for model: RealESRGAN x4 Plus: 7.809s
+Processing image 3/10 for model: RealESRGAN x4 Plus: 7.690s
+Processing image 4/10 for model: RealESRGAN x4 Plus: 7.470s
+Processing image 5/10 for model: RealESRGAN x4 Plus: 6.620s
+Processing image 6/10 for model: RealESRGAN x4 Plus: 7.390s
+Processing image 7/10 for model: RealESRGAN x4 Plus: 7.423s
+Processing image 8/10 for model: RealESRGAN x4 Plus: 7.541s
+Processing image 9/10 for model: RealESRGAN x4 Plus: 7.536s
+Processing image 10/10 for model: RealESRGAN x4 Plus: 7.321s
+Model: RealESRGAN x4 Plus, Latency: 73.273s
+```
+
+#### Enabled
+``` bash
+Preloading model... RealESRGAN x4 Plus
+Preload model: RealESRGAN x4 Plus: 1.165s
+Processing image 1/10 for model: RealESRGAN x4 Plus: 2.217s
+Processing image 2/10 for model: RealESRGAN x4 Plus: 2.196s
+Processing image 3/10 for model: RealESRGAN x4 Plus: 2.203s
+Processing image 4/10 for model: RealESRGAN x4 Plus: 2.191s
+Processing image 5/10 for model: RealESRGAN x4 Plus: 2.200s
+Processing image 6/10 for model: RealESRGAN x4 Plus: 2.203s
+Processing image 7/10 for model: RealESRGAN x4 Plus: 2.216s
+Processing image 8/10 for model: RealESRGAN x4 Plus: 2.222s
+Processing image 9/10 for model: RealESRGAN x4 Plus: 2.188s
+Processing image 10/10 for model: RealESRGAN x4 Plus: 2.194s
+Model: RealESRGAN x4 Plus, Latency: 23.199s
+```
 
 ## Credits
 

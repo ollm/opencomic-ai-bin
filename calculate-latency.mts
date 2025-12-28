@@ -6,29 +6,71 @@ import OpenComicAI from './index.mjs';
 
 	const images = [
 		'../assets/sample-image-1.jpg',
+		'../assets/sample-image-1.jpg',
+		'../assets/sample-image-1.jpg',
+		'../assets/sample-image-1.jpg',
+		'../assets/sample-image-1.jpg',
+		'../assets/sample-image-1.jpg',
+		'../assets/sample-image-1.jpg',
+		'../assets/sample-image-1.jpg',
+		'../assets/sample-image-1.jpg',
+		'../assets/sample-image-1.jpg',
 		// '../assets/sample-image-2.jpg',
 		// '../assets/sample-image-3.jpg',
 	];
 
 	OpenComicAI.setModelsPath('../assets/models');
 
+	const ignoreFirst = false;
+	const perloadFirst = true;
+
 	const modelsList = OpenComicAI.modelsList;
 	const latencies : Record<string, number> = {};
 	const latenciesList: number[] = [];
 
+	// OpenComicAI.setConcurrentDaemons(0);
+
 	for(const _model of modelsList)
 	{
 		const model = OpenComicAI.model(_model);
-		const startTime = Date.now();
 
-		for(const image of images)
+		let startTime = Date.now();
+
+		if(perloadFirst && OpenComicAI.concurrentDaemons > 0)
 		{
+			console.log('Preloading model...', model.name);
+			console.time(`Preload model: ${model.name}`);
+
+			// Preload model
+			await OpenComicAI.preload([
+				{
+					model: _model,
+					scale: 4,
+				}
+			]);
+
+			console.timeEnd(`Preload model: ${model.name}`);
+		}
+
+		for(let i = 0, len = images.length; i < len; i++)
+		{
+			const image = images[i];
+
+			console.time(`Processing image ${i + 1}/${len} for model: ${model.name}`);
+
 			await OpenComicAI.pipeline(image, '../assets/calculate-latency_'+_model+'.jpg', [
 				{
 					model: _model,
 					scale: 4,
 				}
-			], false, {
+			], (progress) => {
+
+				if(progress === undefined)
+					progress = 0;
+
+				// console.log(`Processing image ${i + 1}/${len} for model: ${model.name} - ${Math.round(progress * 100)}%`);
+
+			}, {
 				start: () => {
 
 					console.log(`Start download model: ${model.name}`);
@@ -45,6 +87,11 @@ import OpenComicAI from './index.mjs';
 
 				},
 			});
+
+			console.timeEnd(`Processing image ${i + 1}/${len} for model: ${model.name}`);
+
+			if(ignoreFirst && i === 0)
+				startTime = Date.now();
 		}
 
 		const endTime = Date.now();
