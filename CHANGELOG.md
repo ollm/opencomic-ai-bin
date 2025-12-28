@@ -6,9 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## v1.1.2
 
+##### 🚀 New Features
+
+- Add Windows arm64 binary for `upscayl-bin`
+
 ##### 🐛 Bug Fixes
 
-- Escape quotes in source and destination paths for process input
+- Escape quotes in source and destination paths for process input [`8b14690`](https://github.com/ollm/opencomic-ai-bin/commit/8b14690dcd77dcea1a8d37dfe51b9487294df0da)
 
 ## v1.1.1
 

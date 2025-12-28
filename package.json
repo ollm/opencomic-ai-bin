@@ -1,6 +1,6 @@
 {
 	"name": "opencomic-ai-bin",
-	"version": "1.1.1",
+	"version": "1.1.2",
 	"description": "Upscale and dehalftone images using AI models like Real-CUGAN, Real-ESRGAN, Waifu2x and Upscayl.",
 	"main": "index.mts",
 	"type": "module",

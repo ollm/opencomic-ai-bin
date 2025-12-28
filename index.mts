@@ -82,6 +82,7 @@ const upscalers: Record<Upscaler, UpscalerObject> = {
 			},
 			win32: {
 				x64: 'win/x64/upscayl/upscayl-bin.exe',
+				arm64: 'win/arm64/upscayl/upscayl-bin.exe',
 			},
 			linux: {
 				x64: 'linux/x64/upscayl/upscayl-bin',
