@@ -640,8 +640,7 @@ interface Spawn {
 }
 
 interface DaemonQueue {
-	source: string;
-	dest: string;
+	args: string[];
 	spawn: Spawn;
 }
 
@@ -652,7 +651,7 @@ interface Daemon {
 	queue: DaemonQueue[],
 	processing: boolean;
 	close: () => void;
-	push: (source: string, dest: string, spawn: Spawn) => void;
+	push: (args: string[], spawn: Spawn) => void;
 }
 
 const DEFAULT_MODEL: Model = 'realcugan';
@@ -1221,24 +1220,30 @@ export default class OpenComicAI {
 
 	private static spawnDaemon = async (binary: string, args: string[], spawn?: Spawn): Promise<void> => {
 
-		const source = args[args.indexOf('-i') + 1] ?? '';
-		const dest = args[args.indexOf('-o') + 1] ?? '';
+		const initFlags = ['-m', '-n', '-g'];
 
-		args = args.filter((arg: any) => arg !== '-i' && arg !== source && arg !== '-o' && arg !== dest);
+		const initArgs: string[] = [];
+		const daemonArgs: string[] = [];
 
-		const key: string = [binary, ...args].join(' ');
+		for(let i = 0, len = args.length; i < len; i += 2)
+		{
+			const target = initFlags.includes(args[i]) ? initArgs : daemonArgs;
+			target.push(args[i], args[i + 1]);
+		}
+
+		const key: string = [binary, ...initArgs].join(' ');
 
 		if(OpenComicAI.daemons.has(key))
 		{
 			const daemon = OpenComicAI.daemons.get(key) as Daemon;
-			if(spawn) daemon.push(source, dest, spawn);
+			if(spawn) daemon.push(daemonArgs, spawn);
 		}
 		else
 		{
 			return new Promise<void>((resolve) => {
 
-				const daemon: Daemon = OpenComicAI.daemon(key, binary, args, resolve);
-				if(spawn) daemon.push(source, dest, spawn);
+				const daemon: Daemon = OpenComicAI.daemon(key, binary, initArgs, resolve);
+				if(spawn) daemon.push(daemonArgs, spawn);
 
 			});
 		}
@@ -1332,8 +1337,15 @@ export default class OpenComicAI {
 				currentSpawn = item.spawn;
 				daemon.processing = true;
 
-				const quote = (str: string): string => `"${str.replace(/"/g, '\\"')}"`;
-				proc.stdin!.write(`${quote(item.source)} ${quote(item.dest)}\n`);
+				const args = item.args.map(function(arg) {
+
+					if(arg.startsWith('-'))
+						return arg;
+
+					return `"${arg.replace(/"/g, '\\"')}"`;
+				});
+
+				proc.stdin!.write(`${args.join(' ')}\n`);
 			}
 			else
 			{
@@ -1352,10 +1364,10 @@ export default class OpenComicAI {
 
 		}
 
-		const push = (source: string, dest: string, spawn: Spawn) => {
+		const push = (args: string[], spawn: Spawn) => {
 
 			daemon.lastUsed = Date.now();
-			daemon.queue.push({source, dest, spawn});
+			daemon.queue.push({args, spawn});
 			process();
 
 		}
