@@ -1220,7 +1220,7 @@ export default class OpenComicAI {
 
 	private static spawnDaemon = async (binary: string, args: string[], spawn?: Spawn): Promise<void> => {
 
-		const initFlags = ['-m', '-n', '-g'];
+		const initFlags = ['-m', '-n', '-g', '-z'];
 
 		const initArgs: string[] = [];
 		const daemonArgs: string[] = [];
