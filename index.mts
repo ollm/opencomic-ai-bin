@@ -154,7 +154,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'realcugan',
 			scales: [/*1, */2, 3, 4],
 			noise: [0, 3],
-			latency: 1.32,
+			latency: 2.96,
 			folder: './realcugan/models-se',
 			files: [
 				'up2x-conservative.bin',
@@ -186,7 +186,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 1.53,
+			latency: 1.36,
 			folder: './models',
 			files: [
 				'realesr-animevideov3-x2.bin',
@@ -202,7 +202,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 7.5,
+			latency: 9.44,
 			folder: './models',
 			files: [
 				'realesrgan-x4plus.bin',
@@ -214,7 +214,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 3.26,
+			latency: 3.61,
 			folder: './models',
 			files: [
 				'realesrgan-x4plus-anime.bin',
@@ -226,7 +226,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 7.17,
+			latency: 9.35,
 			folder: './models',
 			files: [
 				'realesrnet-x4plus.bin',
@@ -238,7 +238,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'waifu2x',
 			scales: [/*1, */2, 4, 8, 16, 32],
 			noise: [0, 1, 2, 3],
-			latency: 2.92,
+			latency: 5.2,
 			folder: './waifu2x/models-cunet',
 			files: [
 				'noise0_model.bin',
@@ -266,7 +266,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'waifu2x',
 			scales: [/*1, */2, 4, 8, 16, 32],
 			noise: [0, 1, 2, 3],
-			latency: 0.8,
+			latency: 2.61,
 			folder: './waifu2x/models-upconv_7_anime_style_art_rgb',
 			files: [
 				'noise0_scale2.0x_model.bin',
@@ -286,7 +286,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 7.62,
+			latency: 9.53,
 			folder: './models',
 			files: [
 				'4x-WTP-ColorDS.bin',
@@ -298,7 +298,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 7.82,
+			latency: 9.84,
 			folder: './models',
 			files: [
 				'remacri-4x.bin',
@@ -322,7 +322,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 7.46,
+			latency: 9.73,
 			folder: './models',
 			files: [
 				'ultrasharp-4x.bin',
@@ -346,7 +346,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 7.26,
+			latency: 9.46,
 			folder: './models',
 			files: [
 				'4xInt-RemAnime.bin',
@@ -358,7 +358,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 7.77,
+			latency: 9.55,
 			folder: './models',
 			files: [
 				'AI-Forever_x4plus.bin',
@@ -370,7 +370,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 7.29,
+			latency: 9.77,
 			folder: './models',
 			files: [
 				'4xNomosWebPhoto_esrgan.bin',
@@ -382,7 +382,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 7.39,
+			latency: 9.69,
 			folder: './models',
 			files: [
 				'4xHFA2k.bin',
@@ -394,7 +394,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 1.37,
+			latency: 1.31,
 			folder: './models',
 			files: [
 				'4xLSDIRCompactC3.bin',
@@ -406,7 +406,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 8.3,
+			latency: 9.51,
 			folder: './models',
 			files: [
 				'4xLSDIRplusC.bin',
@@ -418,7 +418,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 7.24,
+			latency: 9.67,
 			folder: './models',
 			files: [
 				'4x_NMKD-Siax_200k.bin',
@@ -430,7 +430,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 7.11,
+			latency: 9.58,
 			folder: './models',
 			files: [
 				'4xNomos8kSC.bin',
@@ -442,7 +442,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 1.47,
+			latency: 1.6,
 			folder: './models',
 			files: [
 				'RealESRGAN_General_WDN_x4_v3.bin',
@@ -454,7 +454,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 1.45,
+			latency: 1.35,
 			folder: './models',
 			files: [
 				'RealESRGAN_General_x4_v3.bin',
@@ -466,7 +466,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 7.01,
+			latency: 9.51,
 			folder: './models',
 			files: [
 				'uniscale_restore_x4.bin',
@@ -478,7 +478,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 7.33,
+			latency: 9.87,
 			folder: './models',
 			files: [
 				'unknown-2.0.1.bin',
@@ -487,12 +487,36 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		},
 	},
 	descreen: {
+		'opencomic-ai-descreen-hard-compact': {
+			name: 'OpenComic AI Descreen Hard Compact',
+			upscaler: 'upscayl',
+			scales: [1],
+			noise: undefined,
+			latency: 0.52,
+			folder: './models',
+			files: [
+				'opencomic-ai-descreen-hard-compact.bin',
+				'opencomic-ai-descreen-hard-compact.param',
+			],
+		},
+		'opencomic-ai-descreen-hard-lite': {
+			name: 'OpenComic AI Descreen Hard Lite',
+			upscaler: 'upscayl',
+			scales: [1],
+			noise: undefined,
+			latency: 3,
+			folder: './models',
+			files: [
+				'opencomic-ai-descreen-hard-lite.bin',
+				'opencomic-ai-descreen-hard-lite.param',
+			],
+		},
 		'1x_halftone_patch_060000_G': {
 			name: 'Halftone Patch 060000 G',
 			upscaler: 'upscayl',
 			scales: [1],
 			noise: undefined,
-			latency: 6.71,
+			latency: 8.26,
 			folder: './models',
 			files: [
 				'1x_halftone_patch_060000_G.bin',
@@ -504,7 +528,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [1],
 			noise: undefined,
-			latency: 0.5,
+			latency: 0.51,
 			folder: './models',
 			files: [
 				'1x_wtp_descreenton_compact.bin',
@@ -513,12 +537,49 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		},
 	},
 	'artifact-removal': {
+		'opencomic-ai-artifact-removal-compact': {
+			name: 'OpenComic AI Artifact Removal Compact',
+			upscaler: 'upscayl',
+			scales: [1],
+			noise: undefined,
+			latency: 0.5,
+			folder: './models',
+			files: [
+				'opencomic-ai-artifact-removal-compact.bin',
+				'opencomic-ai-artifact-removal-compact.param',
+			],
+		},
+		'opencomic-ai-artifact-removal-lite': {
+			name: 'OpenComic AI Artifact Removal Lite',
+			upscaler: 'upscayl',
+			scales: [1],
+			noise: undefined,
+			latency: 2.97,
+			folder: './models',
+			files: [
+				'opencomic-ai-artifact-removal-lite.bin',
+				'opencomic-ai-artifact-removal-lite.param',
+			],
+		},
+
+		'opencomic-ai-artifact-removal': {
+			name: 'OpenComic AI Artifact Removal',
+			upscaler: 'upscayl',
+			scales: [1],
+			noise: undefined,
+			latency: 8.21,
+			folder: './models',
+			files: [
+				'opencomic-ai-artifact-removal.bin',
+				'opencomic-ai-artifact-removal.param',
+			],
+		},
 		'1x_NMKD-Jaywreck3-Lite_320k': {
 			name: 'NMKD Jaywreck3 Lite',
 			upscaler: 'upscayl',
 			scales: [1],
 			noise: undefined,
-			latency: 3.66,
+			latency: 2.98,
 			folder: './models',
 			files: [
 				'1x_NMKD-Jaywreck3-Lite_320k.bin',
@@ -530,7 +591,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [1],
 			noise: undefined,
-			latency: 3.66,
+			latency: 2.98,
 			folder: './models',
 			files: [
 				'1x_NMKD-Jaywreck3-Soft-Lite_320k.bin',
@@ -542,7 +603,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [1],
 			noise: undefined,
-			latency: 8.55,
+			latency: 8.2,
 			folder: './models',
 			files: [
 				'1x-SaiyaJin-DeJpeg.bin',
@@ -554,7 +615,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [1],
 			noise: undefined,
-			latency: 6.37,
+			latency: 8.22,
 			folder: './models',
 			files: [
 				'1x_JPEGDestroyerV2_96000G.bin',
