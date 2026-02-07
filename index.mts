@@ -716,7 +716,7 @@ interface Daemon {
 }
 
 const DEFAULT_MODEL: Model = 'realcugan';
-const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/476007f6e316c7471173af573d0e1ec7e6a941e1/models/';
+const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/1cd5d8de3a8ded9b18e3f3d3462e7a734c8c04f0/models/';
 
 const DAEMON_UPSCALERS: Upscaler[] = ['upscayl'];
 
