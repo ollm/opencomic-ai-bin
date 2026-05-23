@@ -38,8 +38,11 @@ import sharp from 'sharp'; // This is optional, only needed if you want to keep 
 	// Models path, if the model is not found in this folder, it will be downloaded
 	OpenComicAI.setModelsPath('./models');
 
+	// Set sharp instance
+	OpenComicAI.setSharp(sharp); 
+
 	// Keep ICC profile from input image, requires sharp instance
-	OpenComicAI.keepIccProfile(sharp);
+	OpenComicAI.keepIccProfile('rgb16');
 
 	await OpenComicAI.pipeline('./input.jpg', './output.jpg', [
 		{
@@ -117,12 +120,20 @@ Close all running daemons (`upscayl` models only).
 OpenComicAI.closeAllDaemons(): void
 ```
 
+### OpenComicAI.setSharp
+
+Set a sharp instance.
+
+```ts
+OpenComicAI.keepIccProfile(sharp: any): void
+```
+
 ### OpenComicAI.keepIccProfile
 
 Keep the ICC profile from the input image, requires a sharp instance to copy the profile from source to dest.
 
 ```ts
-OpenComicAI.keepIccProfile(sharp: any, pipelineColourspace: string = 'rgb16'): void
+OpenComicAI.keepIccProfile(pipelineColourspace: string = 'rgb16'): void
 ```
 
 ### OpenComicAI.\_\_dirname
@@ -421,3 +432,22 @@ This project uses the following AI models and upscalers:
 - [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)
 - [Waifu2x](https://github.com/nagadomi/waifu2x)
 - [Upscayl](https://github.com/upscayl/upscayl)
+
+## Related Projects
+
+- [OpenComic](https://github.com/ollm/OpenComic)
+- [`ollm/opencomic-ai-training`](https://github.com/ollm/opencomic-ai-training)
+- [`ollm/opencomic-ai-models`](https://github.com/ollm/opencomic-ai-models)
+
+## License
+
+| Component | License |
+|---|---|
+| Source code | MIT |
+| OpenComic AI model weights | CC BY 4.0 |
+
+The source code of this repository is licensed under the MIT License.
+
+OpenComic AI model weights are licensed under the [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
+See [LICENSE](LICENSE) and [LICENSE_MODELS](LICENSE_MODELS) for details.
