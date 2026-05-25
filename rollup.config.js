@@ -3,7 +3,7 @@ import dts from 'rollup-plugin-dts';
 
 export default [
 	{
-		input: 'index.mts',
+		input: 'src/index.mts',
 		output: [
 			{
 				file: 'dist/index.cjs',
@@ -22,7 +22,7 @@ export default [
 		],
 	},
 	{
-		input: 'calculate-latency.mts',
+		input: 'src/calculate-latency.mts',
 		output: [
 			{
 				file: 'dist/calculate-latency.mjs',
@@ -37,7 +37,22 @@ export default [
 		],
 	},
 	{
-		input: 'index.mts',
+		input: 'src/test-yolo.mts',
+		output: [
+			{
+				file: 'dist/test-yolo.mjs',
+				format: 'es',
+			},
+		],
+		plugins: [
+			typescript({
+				tsconfig: './tsconfig.json',
+				declaration: false,
+			}),
+		],
+	},
+	{
+		input: 'src/index.mts',
 		output: {
 			file: 'dist/index.d.ts',
 			format: 'es',

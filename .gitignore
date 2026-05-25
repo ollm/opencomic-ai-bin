@@ -2,6 +2,8 @@ node_modules
 dist
 assets
 !assets/example.jpg
+debug
+test-files
 
 # OSX
 .DS_Store

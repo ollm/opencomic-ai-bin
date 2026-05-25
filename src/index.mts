@@ -3,6 +3,7 @@ import fsp from 'fs/promises';
 import p from 'path';
 import crypto from 'crypto';
 import {spawn} from 'child_process';
+import yolo from 'yolo.mjs';
 
 const ___dirname = typeof __dirname !== 'undefined' ? __dirname : import.meta.dirname;
 
@@ -110,27 +111,71 @@ export interface ModelObject {
 
 let models: Record<ModelType, Record<string, ModelObject>> = {
 	upscale: {
-		/*'opencomic-ai-upscale-lite': {
+		/*
+		'opencomic-ai-upscale-compact': {
+			name: 'OpenComic AI Upscale Compact',
+			upscaler: 'upscayl',
+			scales: [2, 3, 4],
+			noise: undefined,
+			latency: 0.0,
+			folder: './models',
+			files: [
+				'opencomic-ai-upscale-2x-compact.bin',
+				'opencomic-ai-upscale-2x-compact.param',
+				'opencomic-ai-upscale-3x-compact.bin',
+				'opencomic-ai-upscale-3x-compact.param',
+				'opencomic-ai-upscale-4x-compact.bin',
+				'opencomic-ai-upscale-4x-compact.param',
+			],
+			scaleFiles: {
+				2: 'opencomic-ai-upscale-2x-compact',
+				3: 'opencomic-ai-upscale-3x-compact',
+				4: 'opencomic-ai-upscale-4x-compact',
+			},
+		},
+		'opencomic-ai-upscale-lite': {
 			name: 'OpenComic AI Upscale Lite',
 			upscaler: 'upscayl',
-			scales: [2/*, 3, 4* /],
+			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 0.0,
 			folder: './models',
 			files: [
 				'opencomic-ai-upscale-2x-lite.bin',
-				'opencomic-ai-upscale-2x-lite.param',/*
+				'opencomic-ai-upscale-2x-lite.param',
 				'opencomic-ai-upscale-3x-lite.bin',
 				'opencomic-ai-upscale-3x-lite.param',
 				'opencomic-ai-upscale-4x-lite.bin',
-				'opencomic-ai-upscale-4x-lite.param',* /
+				'opencomic-ai-upscale-4x-lite.param',
 			],
 			scaleFiles: {
 				2: 'opencomic-ai-upscale-2x-lite',
 				3: 'opencomic-ai-upscale-3x-lite',
 				4: 'opencomic-ai-upscale-4x-lite',
 			},
-		},*/
+		},
+		'opencomic-ai-upscale': {
+			name: 'OpenComic AI Upscale',
+			upscaler: 'upscayl',
+			scales: [2, 3, 4],
+			noise: undefined,
+			latency: 0.0,
+			folder: './models',
+			files: [
+				'opencomic-ai-upscale-2x.bin',
+				'opencomic-ai-upscale-2x.param',
+				'opencomic-ai-upscale-3x.bin',
+				'opencomic-ai-upscale-3x.param',
+				'opencomic-ai-upscale-4x.bin',
+				'opencomic-ai-upscale-4x.param',
+			],
+			scaleFiles: {
+				2: 'opencomic-ai-upscale-2x',
+				3: 'opencomic-ai-upscale-3x',
+				4: 'opencomic-ai-upscale-4x',
+			},
+		},
+		*/
 		/*'realcugan-nose': {
 			name: 'RealCUGAN NoSE',
 			upscaper: 'realcugan',
@@ -511,6 +556,18 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 				'opencomic-ai-descreen-hard-lite.param',
 			],
 		},
+		'opencomic-ai-descreen-hard': {
+			name: 'OpenComic AI Descreen Hard',
+			upscaler: 'upscayl',
+			scales: [1],
+			noise: undefined,
+			latency: 3,
+			folder: './models',
+			files: [
+				'opencomic-ai-descreen-hard.bin',
+				'opencomic-ai-descreen-hard.param',
+			],
+		},
 		'1x_halftone_patch_060000_G': {
 			name: 'Halftone Patch 060000 G',
 			upscaler: 'upscayl',
@@ -741,6 +798,9 @@ export default class OpenComicAI {
 	public static concurrentDaemons: number = 3;
 	public static daemonIdleTimeout: number = 60000; // 60 seconds
 
+	public static yolo = yolo;
+	public static yoloIdleTimeout: number = 60000; // 60 seconds
+
 	private static resolve = (path: string): string => {
 
 		if(!p.isAbsolute(path))
@@ -784,6 +844,13 @@ export default class OpenComicAI {
 
 	}
 
+	public static setYoloIdleTimeout = (timeout: number = 60000): void => {
+
+		OpenComicAI.yoloIdleTimeout = timeout;
+		yolo.setIdleTimeout(timeout);
+
+	}
+
 	public static closeAllDaemons = (): void => {
 
 		for(const daemon of OpenComicAI.daemons.values())
@@ -823,9 +890,15 @@ export default class OpenComicAI {
 
 	}
 
-	public static keepIccProfile = (sharp: any, pipelineColourspace: string = 'rgb16'): void => {
+	public static setSharp = (sharp: any): void => {
 
 		OpenComicAI.sharp = sharp;
+		yolo.setSharp(sharp);
+
+	}
+
+	public static keepIccProfile = (pipelineColourspace: string = 'rgb16'): void => {
+
 		OpenComicAI.pipelineColourspace = pipelineColourspace;
 
 	}
@@ -1023,7 +1096,7 @@ export default class OpenComicAI {
 			prevIntermediateDest = OpenComicAI.resolve(intermediateDest);
 		}
 
-		if(OpenComicAI.sharp)
+		if(OpenComicAI.sharp && OpenComicAI.pipelineColourspace)
 		{
 			// Read metadata (including ICC profile) from source image
 			const srcMetadata = await OpenComicAI.sharp(_source).metadata();

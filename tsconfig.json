@@ -7,7 +7,9 @@
 		"strict": true,
 		"esModuleInterop": true,
 		"moduleResolution": "node",
+		"baseUrl": "src",
 		"outDir": "dist"
 	},
-	"include": ["index.mts", "calculate-latency.mts"]
+	"include": ["src/**/*"],
+	"exclude": ["node_modules"]
 }
