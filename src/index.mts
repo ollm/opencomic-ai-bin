@@ -133,12 +133,13 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 				4: 'opencomic-ai-upscale-4x-compact',
 			},
 		},
+		*/
 		'opencomic-ai-upscale-lite': {
 			name: 'OpenComic AI Upscale Lite',
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 0.0,
+			latency: 2.59,
 			folder: './models',
 			files: [
 				'opencomic-ai-upscale-2x-lite.bin',
@@ -154,6 +155,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 				4: 'opencomic-ai-upscale-4x-lite',
 			},
 		},
+		/*
 		'opencomic-ai-upscale': {
 			name: 'OpenComic AI Upscale',
 			upscaler: 'upscayl',
@@ -773,7 +775,7 @@ interface Daemon {
 }
 
 const DEFAULT_MODEL: Model = 'realcugan';
-const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/1cd5d8de3a8ded9b18e3f3d3462e7a734c8c04f0/models/';
+const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/f07362de75ce75b2c554f14cdd4d0ce2b2e043eb/models/';
 
 const DAEMON_UPSCALERS: Upscaler[] = ['upscayl'];
 
@@ -1247,8 +1249,11 @@ export default class OpenComicAI {
 				let modelName: Model = model;
 				let modelScale: string = Math.max(...modelInfo.scales).toString();
 
-				if(modelInfo.scaleFiles && scale)
+				if(modelInfo.scaleFiles)
 				{
+					if(!scale)
+						scale = Math.max(...modelInfo.scales);
+
 					modelName = modelInfo.scaleFiles[scale];
 					modelScale = scale.toString();
 				}

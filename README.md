@@ -28,7 +28,7 @@ import OpenComicAI from 'opencomic-ai-bin';
 
 ```ts
 import OpenComicAI from 'opencomic-ai-bin';
-import sharp from 'sharp'; // This is optional, only needed if you want to keep ICC profile
+import sharp from 'sharp'; // This is optional, only needed if you want to keep ICC profile or use a YOLO26 model
 
 (async () => {
 

@@ -28,6 +28,28 @@ import OpenComicAI from './index.mjs';
 	const latencies : Record<string, number> = {};
 	const latenciesList: number[] = [];
 
+	// Test OpenComic AI upscale models
+	await OpenComicAI.pipeline('../assets/sample-image-1.jpg', '../assets/oc-ai-upscale-2x.jpg', [
+		{
+			model: 'opencomic-ai-upscale-lite',
+			scale: 2,
+		}
+	]);
+
+	await OpenComicAI.pipeline('../assets/sample-image-1.jpg', '../assets/oc-ai-upscale-3x.jpg', [
+		{
+			model: 'opencomic-ai-upscale-lite',
+			scale: 3,
+		}
+	]);
+
+	await OpenComicAI.pipeline('../assets/sample-image-1.jpg', '../assets/oc-ai-upscale-4x.jpg', [
+		{
+			model: 'opencomic-ai-upscale-lite',
+			scale: 4,
+		}
+	]);
+
 	// OpenComicAI.setConcurrentDaemons(0);
 
 	for(const _model of modelsList)
