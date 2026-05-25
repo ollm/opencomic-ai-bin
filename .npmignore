@@ -1,0 +1,8 @@
+node_modules
+src
+assets
+debug
+test-files
+
+# OSX
+.DS_Store

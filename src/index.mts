@@ -563,7 +563,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			scales: [1],
 			noise: undefined,
-			latency: 3,
+			latency: 8.67,
 			folder: './models',
 			files: [
 				'opencomic-ai-descreen-hard.bin',

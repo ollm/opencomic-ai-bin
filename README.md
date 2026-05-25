@@ -314,6 +314,7 @@ Model | Name | Upscaler | Source
 ------|------|----------|-------
 `opencomic-ai-descreen-hard-compact` | OpenComic AI Descreen Hard Compact | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
 `opencomic-ai-descreen-hard-lite` | OpenComic AI Descreen Hard Lite | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-descreen-hard` | OpenComic AI Descreen Hard | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
 `1x_halftone_patch_060000_G` | Halftone Patch 060000 G | `upscayl` | [NMKD.de](https://nmkd.de/shared/?dir=ESRGAN/Models/Compression/Halftone)
 `1x_wtp_descreenton_compact` | WTP DescreenTon Compact | `upscayl` | [OpenModelDB](https://openmodeldb.info/models/1x-wtp-descreentone-compact)
 
@@ -321,6 +322,7 @@ Model | Name | Upscaler | Source
 
 Model | Name | Upscaler | Source
 ------|------|----------|-------
+`opencomic-ai-upscale-lite` | OpenComic AI Upscale Lite | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
 `realcugan` | RealCUGAN | `realcugan` | [Moebytes/waifu2x](https://github.com/Moebytes/waifu2x/tree/eaadd13cf54ba3bcb3cbd3e4a1cb2cd922420c9b/real-cugan/models-se)
 `realesr-animevideov3` | RealESR AnimeVideo v3 | `upscayl` | [xinntao/Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)
 `realesrgan-x4plus` | RealESRGAN x4 Plus | `upscayl` | [xinntao/Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)
