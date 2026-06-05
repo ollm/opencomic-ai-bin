@@ -111,13 +111,12 @@ export interface ModelObject {
 
 let models: Record<ModelType, Record<string, ModelObject>> = {
 	upscale: {
-		/*
 		'opencomic-ai-upscale-compact': {
 			name: 'OpenComic AI Upscale Compact',
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 0.0,
+			latency: 0.63,
 			folder: './models',
 			files: [
 				'opencomic-ai-upscale-2x-compact.bin',
@@ -133,7 +132,6 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 				4: 'opencomic-ai-upscale-4x-compact',
 			},
 		},
-		*/
 		'opencomic-ai-upscale-lite': {
 			name: 'OpenComic AI Upscale Lite',
 			upscaler: 'upscayl',
@@ -775,7 +773,7 @@ interface Daemon {
 }
 
 const DEFAULT_MODEL: Model = 'realcugan';
-const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/f07362de75ce75b2c554f14cdd4d0ce2b2e043eb/models/';
+const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/e0153b6b554e8956cd2f2acd0b0cbd0bf7db9881/models/';
 
 const DAEMON_UPSCALERS: Upscaler[] = ['upscayl'];
 
