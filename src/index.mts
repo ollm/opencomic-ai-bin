@@ -98,6 +98,8 @@ export interface ModelObject {
 	name: string;
 	upscaler: Upscaler;
 	type?: ModelType;
+//	tileSize?: number | 'auto';
+//	tileSizeFromMem128?: number; // Model memory usage in MB measured at tile=128 for auto tile estimation
 	scales: number[];
 	noise: number[] | undefined;
 	latency: number;
@@ -114,6 +116,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'opencomic-ai-upscale-compact': {
 			name: 'OpenComic AI Upscale Compact',
 			upscaler: 'upscayl',
+// 			tileSize: 128,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 0.63,
@@ -153,13 +156,12 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 				4: 'opencomic-ai-upscale-4x-lite',
 			},
 		},
-		/*
 		'opencomic-ai-upscale': {
 			name: 'OpenComic AI Upscale',
 			upscaler: 'upscayl',
 			scales: [2, 3, 4],
 			noise: undefined,
-			latency: 0.0,
+			latency: 8.36,
 			folder: './models',
 			files: [
 				'opencomic-ai-upscale-2x.bin',
@@ -175,7 +177,6 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 				4: 'opencomic-ai-upscale-4x',
 			},
 		},
-		*/
 		/*'realcugan-nose': {
 			name: 'RealCUGAN NoSE',
 			upscaper: 'realcugan',
@@ -773,7 +774,7 @@ interface Daemon {
 }
 
 const DEFAULT_MODEL: Model = 'realcugan';
-const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/e0153b6b554e8956cd2f2acd0b0cbd0bf7db9881/models/';
+const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/f57820a3490e5c38984be02d73a2c208106efe3c/models/';
 
 const DAEMON_UPSCALERS: Upscaler[] = ['upscayl'];
 

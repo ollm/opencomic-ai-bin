@@ -4,6 +4,8 @@ import fs from 'fs/promises';
 import _fs from 'fs';
 import p from 'path';
 
+import fillHoles from './fill-holes.mjs';
+
 export default async function detect(source: string, session: ModelSession, _yolo: Yolo): Promise<{boxes: Box[], width: number, height: number}> {
 
 	const yolo = {
@@ -18,6 +20,7 @@ export default async function detect(source: string, session: ModelSession, _yol
 		scale: 1,
 		baseScale: 'model',
 		cropToBox: true,
+		fillHoles: true,
 		maxComponents: 1,
 		...yolo.mask,
 	};
@@ -160,6 +163,10 @@ export default async function detect(source: string, session: ModelSession, _yol
 		// Keep only largest connected components
 		if(mask.maxComponents)
 			maskData = maxComponents(maskData, scaledWidth, scaledHeight, mask.maxComponents);
+
+		// Fill holes in the mask
+		if(mask.fillHoles)
+			maskData = fillHoles(maskData, scaledWidth, scaledHeight);
 
 		if(mask.minArea)
 		{
