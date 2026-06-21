@@ -456,7 +456,7 @@ If you use this project, please cite it as follows.
 }
 ```
 
-Release models citation.
+Release models citation. To see the differences between versions, you can check the [`CHANGELOG.md`](https://github.com/ollm/opencomic-ai-training/blob/master/CHANGELOG.md) file.
 
 #### OpenComic AI v1.0
 
