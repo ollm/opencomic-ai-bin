@@ -7,6 +7,8 @@ authors:
     given-names: Oleguer
 repository-code: https://github.com/ollm/opencomic-ai-training
 url: https://github.com/ollm/opencomic-ai-training
+year: 2026
+version: 2.0
 keywords:
   - manga
   - comics
