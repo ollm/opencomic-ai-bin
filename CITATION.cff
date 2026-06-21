@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+title: OpenComic AI V2
+type: software
+message: "If you use this project, please cite it as follows."
+authors:
+  - family-names: Llopart Mora
+    given-names: Oleguer
+repository-code: https://github.com/ollm/opencomic-ai-training
+url: https://github.com/ollm/opencomic-ai-training
+keywords:
+  - manga
+  - comics
+  - comic-analysis
+  - panel-detection
+  - image-restoration
+  - artifact-removal
+  - descreening
+  - super-resolution
+  - image-upscaling
+  - deep-learning
+  - computer-vision
+  - image-processing

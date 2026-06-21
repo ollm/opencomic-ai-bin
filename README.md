@@ -442,6 +442,46 @@ This project uses the following AI models and upscalers:
 - [`ollm/opencomic-ai-training`](https://github.com/ollm/opencomic-ai-training)
 - [`ollm/opencomic-ai-models`](https://github.com/ollm/opencomic-ai-models)
 
+## Citation (opencomic-ai-training)
+
+If you use this project, please cite it as follows.
+
+``` bibtex
+@misc{opencomic_ai,
+    author = {Oleguer Llopart Mora},
+    title = {{OpenComic AI}},
+    year = {2026},
+    publisher = {GitHub},
+    url = {https://github.com/ollm/opencomic-ai-training}
+}
+```
+
+Release models citation.
+
+#### OpenComic AI v1.0
+
+``` bibtex
+@misc{opencomic_ai_models_v1_0,
+    author = {Oleguer Llopart Mora},
+    title = {{OpenComic AI v1.0 Models}},
+    year = {2026},
+    publisher = {GitHub},
+    url = {https://github.com/ollm/opencomic-ai-training/releases/tag/v1.0}
+}
+```
+
+#### OpenComic AI v2.0 (Still training)
+
+``` bibtex
+@misc{opencomic_ai_models_v2_0,
+    author = {Oleguer Llopart Mora},
+    title = {{OpenComic AI v2.0 Models}},
+    year = {2026},
+    publisher = {GitHub},
+    url = {https://github.com/ollm/opencomic-ai-training/releases/tag/v2.0}
+}
+```
+
 ## License
 
 | Component | License |
