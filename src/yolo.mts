@@ -1,4 +1,4 @@
-import {InferenceSession} from 'onnxruntime-node';
+import type {InferenceSession} from 'onnxruntime-node';
 
 import detect from './yolo/detect.mjs';
 import render from './yolo/render.mjs';
@@ -49,8 +49,27 @@ export interface ModelSession {
 
 let sharp: any = false;
 let idleTimeout = 60000;
+let onnxRuntimeNodePromise: Promise<typeof import('onnxruntime-node')> | undefined;
 
 let models = new Map<string, ModelSession>();
+
+async function getOnnxRuntimeNode(): Promise<typeof import('onnxruntime-node')> {
+
+	if(!onnxRuntimeNodePromise)
+	{
+		onnxRuntimeNodePromise = import('onnxruntime-node').catch(function(error) {
+
+			onnxRuntimeNodePromise = undefined;
+
+			throw new Error(
+				`The optional dependency "onnxruntime-node" is required for YOLO detection. Install it with "npm install onnxruntime-node". Original error: ${error instanceof Error ? error.message : String(error)}`
+			);
+
+		});
+	}
+
+	return onnxRuntimeNodePromise;
+}
 
 async function loadModel({model, providers = ['webgl', 'cpu']}: Yolo): Promise<ModelSession> {
 
@@ -68,6 +87,8 @@ async function loadModel({model, providers = ['webgl', 'cpu']}: Yolo): Promise<M
 
 		return session;
 	}
+
+	const {InferenceSession} = await getOnnxRuntimeNode();
 
 	const net = await InferenceSession.create(model, {
 		executionProviders: providers,

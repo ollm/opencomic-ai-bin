@@ -1,10 +1,30 @@
-import {InferenceSession, Tensor} from 'onnxruntime-node';
+import type {Tensor as TensorType} from 'onnxruntime-node';
 import sharp, {ModelSession, Yolo, Box} from '../yolo.mjs';
 import fs from 'fs/promises';
 import _fs from 'fs';
 import p from 'path';
 
 import fillHoles from './fill-holes.mjs';
+
+let onnxRuntimeNodePromise: Promise<typeof import('onnxruntime-node')> | undefined;
+
+async function getOnnxRuntimeNode(): Promise<typeof import('onnxruntime-node')> {
+
+	if(!onnxRuntimeNodePromise)
+	{
+		onnxRuntimeNodePromise = import('onnxruntime-node').catch(function(error) {
+
+			onnxRuntimeNodePromise = undefined;
+
+			throw new Error(
+				`The optional dependency "onnxruntime-node" is required for YOLO detection. Install it with "npm install onnxruntime-node". Original error: ${error instanceof Error ? error.message : String(error)}`
+			);
+
+		});
+	}
+
+	return onnxRuntimeNodePromise;
+}
 
 export default async function detect(source: string, session: ModelSession, _yolo: Yolo): Promise<{boxes: Box[], width: number, height: number}> {
 
@@ -65,7 +85,8 @@ export default async function detect(source: string, session: ModelSession, _yol
 		imageFloat32[i + pixelCount * 2] = b / 255;
 	}
 
-	const tensor = new Tensor('float32', imageFloat32, inputShape);
+	const {Tensor} = await getOnnxRuntimeNode();
+	const tensor = new Tensor('float32', imageFloat32, inputShape) as TensorType;
 	const {output0, output1} = await session.net.run({ images: tensor });
 
 	const boxes: Box[] = [];
