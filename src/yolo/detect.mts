@@ -1,31 +1,9 @@
-import type {Tensor as TensorType} from 'onnxruntime-node';
-import sharp, {ModelSession, Yolo, Box} from '../yolo.mjs';
-import fs from 'fs/promises';
-import _fs from 'fs';
-import p from 'path';
+import sharp, {Box} from '../yolo.mjs';
+import _fs from 'node:fs';
 
-import fillHoles from './fill-holes.mjs';
+// import fillHoles from './fill-holes.mjs';
 
-let onnxRuntimeNodePromise: Promise<typeof import('onnxruntime-node')> | undefined;
-
-async function getOnnxRuntimeNode(): Promise<typeof import('onnxruntime-node')> {
-
-	if(!onnxRuntimeNodePromise)
-	{
-		onnxRuntimeNodePromise = import('onnxruntime-node').catch(function(error) {
-
-			onnxRuntimeNodePromise = undefined;
-
-			throw new Error(
-				`The optional dependency "onnxruntime-node" is required for YOLO detection. Install it with "npm install onnxruntime-node". Original error: ${error instanceof Error ? error.message : String(error)}`
-			);
-
-		});
-	}
-
-	return onnxRuntimeNodePromise;
-}
-
+/*
 export default async function detect(source: string, session: ModelSession, _yolo: Yolo): Promise<{boxes: Box[], width: number, height: number}> {
 
 	const yolo = {
@@ -216,6 +194,7 @@ export default async function detect(source: string, session: ModelSession, _yol
 		height: scaledHeight,
 	};
 }
+*/
 
 function processMaskPyTorchStyle(
 	maskCoeffs: Float32Array,

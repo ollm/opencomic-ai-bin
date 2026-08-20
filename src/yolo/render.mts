@@ -1,12 +1,13 @@
 // Render boxes and mask to image, for testing only
-import p from 'path';
-import fs from 'fs';
-import fsp from 'fs/promises';
+import p from 'node:path';
+import fs from 'node:fs';
+import fsp from 'node:fs/promises';
+import OpenComicAI from '../index.mjs';
 
 import yolo, {Detection} from '../yolo.mjs';
 
 export interface RenderOptions {
-	yoloInput?: boolean;
+	input?: boolean;
 	mask?: boolean | {transparent?: boolean};
 	overlay?: boolean | {opacity?: number};
 	overlayMask?: boolean | {opacity?: number};
@@ -24,18 +25,19 @@ export default async function render(dest: string, detection: Detection, options
 
 	for(const file of files)
 	{
-		if(/^(?:yolo-input|mask\-[\d]+|overlay|overlay-mask|path|result)\.(?:png|svg)$/.test(file) && options.yoloInput)
+		if(/^(?:yolo-input|mask\-[\d]+|overlay|overlay-mask|path|result)\.(?:png|svg)$/.test(file) && options.input)
 			await fsp.unlink(p.join(dest, file));
 	}
 
-	const [modelWidth, modelHeight] = detection.yolo.inputShape.slice(2);
+	const [modelWidth, modelHeight] = [detection.width, detection.height];
+	const [finalWidth, finalHeight] = detection.matchInputSize ? [detection.originalWidth, detection.originalHeight] : [detection.width, detection.height];
 	const opacity = 0.5;
 
-	// YOLO input
-	if(options.yoloInput)
+	// Input
+	if(options.input)
 	{
-		const image = await yolo.sharp(detection.image).resize(modelWidth, modelHeight, {fit: 'contain', kernel: 'lanczos3', position: 'left top'}).png().raw().toBuffer();
-		await yolo.sharp(image, {raw: {width: modelWidth, height: modelHeight, channels: 3}}).toFile(p.join(dest, 'yolo-input.png'));
+		const image = await OpenComicAI.sharp(detection.image).resize(modelWidth, modelHeight, {fit: 'contain', kernel: 'lanczos3', position: 'left top'}).png().raw().toBuffer();
+		await OpenComicAI.sharp(image, {raw: {width: modelWidth, height: modelHeight, channels: 3}}).toFile(p.join(dest, 'yolo-input.png'));
 	}
 
 	// Mask
@@ -45,11 +47,11 @@ export default async function render(dest: string, detection: Detection, options
 		{
 			const box = detection.boxes[i];
 
-			let _sharp = yolo.sharp(Buffer.from(box.mask), {raw: {width: box.width, height: box.height, channels: 1}});
+			let _sharp = OpenComicAI.sharp(Buffer.from(box.mask), {raw: {width: box.width, height: box.height, channels: 1}});
 
 			if(options.mask !== true && options.mask?.transparent)
 			{
-				_sharp = yolo.sharp({
+				_sharp = OpenComicAI.sharp({
 					create: {
 						width: box.width,
 						height: box.height,
@@ -59,7 +61,7 @@ export default async function render(dest: string, detection: Detection, options
 				}).joinChannel(await _sharp.png().toBuffer());
 			}
 
-			await _sharp.png().toFile(p.join(dest, `mask-${i}.png`));
+			await _sharp.resize(finalWidth, finalHeight, {fit: 'fill', kernel: 'nearest'}).png().toFile(p.join(dest, `mask-${i}.png`));
 		}
 	}
 
@@ -93,7 +95,7 @@ export default async function render(dest: string, detection: Detection, options
 		}
 
 		overlay = `
-			<svg width="${detection.width}" height="${detection.height}">
+			<svg width="${finalWidth}" height="${finalHeight}">
 				${svgElements.join('\n')}
 			</svg>
 		`;
@@ -109,10 +111,10 @@ export default async function render(dest: string, detection: Detection, options
 	{
 		const _opacity = (typeof options.overlayMask === 'object' ? options.overlayMask.opacity : undefined) ?? opacity;
 
-		overlayMask = yolo.sharp({
+		overlayMask = OpenComicAI.sharp({
 			create: {
-				width: detection.width,
-				height: detection.height,
+				width: finalWidth,
+				height: finalHeight,
 				channels: 4,
 				background: {r: 255, g: 255, b: 255, alpha: 0},
 			},
@@ -126,18 +128,18 @@ export default async function render(dest: string, detection: Detection, options
 			const {r, g, b} = hexToRgb(color);
 			const box = detection.boxes[i];
 
-			const mask = yolo.sharp(Buffer.from(box.mask), {
+			const mask = OpenComicAI.sharp(Buffer.from(box.mask), {
 				raw: {
 					width: box.width,
 					height: box.height, 
 					channels: 1,
 				},
-			}).linear(_opacity, 0);
+			}).linear(_opacity, 0).resize(finalWidth, finalHeight, {fit: 'fill', kernel: 'nearest'});
 
-			const coloredMask = await yolo.sharp({
+			const coloredMask = await OpenComicAI.sharp({
 				create: {
-					width: box.width,
-					height: box.height,
+					width: finalWidth,
+					height: finalHeight,
 					channels: 3,
 					background: {r, g, b},
 				},
@@ -170,7 +172,7 @@ export default async function render(dest: string, detection: Detection, options
 		}
 
 		const svg = `
-			<svg width="${detection.width}" height="${detection.height}">
+			<svg width="${finalWidth}" height="${finalHeight}">
 				${svgElements.join('\n')}
 			</svg>
 		`;
@@ -181,7 +183,7 @@ export default async function render(dest: string, detection: Detection, options
 	// Result (image + overlay + overlayMask)
 	if(options.result)
 	{
-		let result = yolo.sharp(detection.image).resize(detection.width, detection.height, {fit: 'contain', kernel: 'lanczos3', position: 'left top'});
+		let result = OpenComicAI.sharp(detection.image).resize(finalWidth, finalHeight, {fit: 'contain', kernel: 'lanczos3', position: 'left top'});
 
 		const composites = [];
 

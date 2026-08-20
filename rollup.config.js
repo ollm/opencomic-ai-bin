@@ -52,6 +52,36 @@ export default [
 		],
 	},
 	{
+		input: 'src/test-keep-big-halftone.mts',
+		output: [
+			{
+				file: 'dist/test-keep-big-halftone.mjs',
+				format: 'es',
+			},
+		],
+		plugins: [
+			typescript({
+				tsconfig: './tsconfig.json',
+				declaration: false,
+			}),
+		],
+	},
+	{
+		input: 'src/test-panels.mts',
+		output: [
+			{
+				file: 'dist/test-panels.mjs',
+				format: 'es',
+			},
+		],
+		plugins: [
+			typescript({
+				tsconfig: './tsconfig.json',
+				declaration: false,
+			}),
+		],
+	},
+	{
 		input: 'src/index.mts',
 		output: {
 			file: 'dist/index.d.ts',

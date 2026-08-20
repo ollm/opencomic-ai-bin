@@ -4,24 +4,30 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.4.0
+
+##### 🚀 New Features
+
+- Preliminary support for Panel detection and Descreen Mask
+
 ## v1.3.0
 
 ##### 🚀 New Features
 
-- Preliminary support for YOLO26 models
-- Add OpenComic AI Upscale Lite model
+- Preliminary support for YOLO26 models [`0401cb7`](https://github.com/ollm/opencomic-ai-bin/commit/0401cb79668705d32ddfa08eee6f2786121a1ed5)
+- Add OpenComic AI Upscale Lite model [`6641ea6`](https://github.com/ollm/opencomic-ai-bin/commit/6641ea6f65f2dd0a0a517eb388bffb3bbd9a431a)
 
 ## v1.2.0
 
 ##### 🚀 New Features
 
-- Add some of the OpenComic AI models
+- Add some of the OpenComic AI models [`ee94534`](https://github.com/ollm/opencomic-ai-bin/commit/ee945348b83f4f1420b35c114fefd763ed13237d)
 
 ## v1.1.4
 
 ##### 🐛 Bug Fixes
 
-- Windows binary for `upscayl-bin` (daemon mode not working)
+- Windows binary for `upscayl-bin` (daemon mode not working) [`b348e37`](https://github.com/ollm/opencomic-ai-bin/commit/b348e3754245cb633d02937d35a7270e53670c3a)
 
 ## v1.1.3
 

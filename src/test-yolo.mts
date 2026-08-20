@@ -1,30 +1,6 @@
-import yolo, {Yolo} from './yolo.mjs';
-import p from 'path';
 import sharp from 'sharp';
-
-function getArg(arg: string): string | null
-{
-	const index = process.argv.indexOf(arg);
-	if(index === -1) return null;
-
-	const value = process.argv[index + 1];
-	if(!value || value.startsWith('--')) return null;
-
-	return value;
-}
-
-function resolve(path: string): string
-{
-	if(!p.isAbsolute(path))
-	{
-		if(typeof module !== 'undefined')
-			path = p.resolve(module?.parent?.path ?? '', '../', path);
-		else
-			path = p.resolve(import.meta?.dirname ?? '', '../', path);
-	}
-
-	return p.normalize(path);
-}
+import yolo, {Yolo} from './yolo.mjs';
+import {getArg, resolve} from './test-utils.mjs';
 
 const model = resolve(getArg('--model') || '');
 const image = resolve(getArg('--image') || '');

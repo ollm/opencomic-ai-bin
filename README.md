@@ -46,12 +46,11 @@ import sharp from 'sharp'; // This is optional, only needed if you want to keep 
 
 	await OpenComicAI.pipeline('./input.jpg', './output.jpg', [
 		{
-			model: '1x_halftone_patch_060000_G',
+			model: 'opencomic-ai-descreen-hard-lite',
 		},
 		{
-			model: 'realcugan',
+			model: 'opencomic-ai-upscale-lite',
 			scale: 4,
-			noise: 0,
 		}
 	], (progress) => {
 
@@ -228,9 +227,9 @@ OpenComicAI.closest(array: number[], target: number): number
 
 ```typescript
 type Model =
-	| 'realcugan'
-	| 'realesr-animevideov3'
-	| 'realesrgan-x4plus'
+	| 'opencomic-ai-upscale-compact'
+	| 'opencomic-ai-upscale-lite'
+	| 'opencomic-ai-upscale'
 	...
 ```
 ### `ModelType`

@@ -1,9 +1,10 @@
-import fs from 'fs';
-import fsp from 'fs/promises';
-import p from 'path';
-import crypto from 'crypto';
-import {spawn} from 'child_process';
-import yolo from 'yolo.mjs';
+import p from 'node:path';
+import fs from 'node:fs';
+import fsp from 'node:fs/promises';
+import crypto from 'node:crypto';
+import {spawn} from 'node:child_process';
+import panels from './panels.mjs';
+import keepBigHalftone from './descreen/keep-big-halftone.mjs';
 
 const ___dirname = typeof __dirname !== 'undefined' ? __dirname : import.meta.dirname;
 
@@ -28,7 +29,7 @@ export type Formats =
 	| 'tiff'
 	| 'webp';
 
-export type ModelType = 'upscale' | 'descreen' | 'artifact-removal';
+export type ModelType = 'upscale' | 'descreen' | 'descreen-mask' | 'artifact-removal' | 'panels';
 export type Upscaler = 'realcugan' | 'waifu2x' | 'upscayl';
 export type Speed = 'Very Fast' | 'Fast' | 'Medium' | 'Slow' | 'Very Slow';
 
@@ -98,8 +99,8 @@ export interface ModelObject {
 	name: string;
 	upscaler: Upscaler;
 	type?: ModelType;
-//	tileSize?: number | 'auto';
-//	tileSizeFromMem128?: number; // Model memory usage in MB measured at tile=128 for auto tile estimation
+	tileSize?: number;
+	tileSizeFromMem128?: number; // Model memory usage in MB measured at tile=128 for auto tile estimation
 	scales: number[];
 	noise: number[] | undefined;
 	latency: number;
@@ -548,6 +549,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'opencomic-ai-descreen-hard-lite': {
 			name: 'OpenComic AI Descreen Hard Lite',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 32, // TODO: Test only for now, need calculate tile size from memory usage for all models
 			scales: [1],
 			noise: undefined,
 			latency: 3,
@@ -681,6 +683,35 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			],
 		},
 	},
+	'descreen-mask': {
+		'opencomic-ai-descreen-mask-balanced-v3-test2-100000': { // TODO: Test model
+			name: 'OpenComic AI Descreen Mask Balanced v3 Test Model 100000',
+			upscaler: 'upscayl',
+			scales: [1],
+			noise: undefined,
+			latency: 0,
+			folder: './models',
+			files: [
+				'opencomic-ai-descreen-mask-balanced-v3-test2-100000.bin',
+				'opencomic-ai-descreen-mask-balanced-v3-test2-100000.param',
+			],
+		},
+	},
+	panels: {
+		'opencomic-ai-panels-fast-256-channels-inverted-155000': {
+			name: 'OpenComic AI Panels Fast V3 Test Model',
+			upscaler: 'upscayl',
+			tileSize: 256,
+			scales: [1],
+			noise: undefined,
+			latency: 0,
+			folder: './models',
+			files: [
+				'opencomic-ai-panels-fast-256-channels-inverted-155000.bin',
+				'opencomic-ai-panels-fast-256-channels-inverted-155000.param',
+			],
+		},
+	},
 };
 
 const modelSpeed = (latency: number): Speed => {
@@ -731,19 +762,49 @@ models = {
 	upscale: parseModels(models.upscale, 'upscale'),
 	descreen: parseModels(models.descreen, 'descreen'),
 	'artifact-removal': parseModels(models['artifact-removal'], 'artifact-removal'),
+	'descreen-mask': parseModels(models['descreen-mask'], 'descreen-mask'),
+	panels: parseModels(models.panels, 'panels'),
 };
 
-export type Model = keyof typeof models.upscale & keyof typeof models.descreen & keyof typeof models['artifact-removal'] & keyof typeof scalesModels;
+export type Model = keyof typeof models.upscale & keyof typeof models.descreen & keyof typeof models['artifact-removal'] & keyof typeof models['descreen-mask'] & keyof typeof models.panels & keyof typeof scalesModels;
+export type ModelUpscale = keyof typeof models.upscale;
+export type ModelArtifactRemoval = keyof typeof models['artifact-removal'];
+export type ModelMask = keyof typeof models['descreen-mask'];
+export type ModelPanels = keyof typeof models.panels;
 
 export interface OpenComicAIOptions {
 	model?: Model;
 	noise?: 0 | 1 | 2 | 3;
 	scale?: number;
 	// format?: 'jpg' | 'png' | 'webp';
-	tileSize?: number;
+	tileSize?: number | 'auto';
+	maxTileSize?: number;
+	memorySafePercentage?: number;
 	gpuId?: string;
 	threads?: number;
 	tta?: boolean;
+	keepBigHalftone?: OpenComicAIKeepBigHalftone;
+}
+
+export interface OpenComicAIUpscale extends Omit<OpenComicAIOptions, 'keepBigHalftone'> {
+	model: ModelUpscale;
+}
+
+export interface OpenComicAIKeepBigHalftone extends Omit<OpenComicAIOptions, 'keepBigHalftone'> {
+	model: ModelMask | 'auto';
+	minSize?: number;
+	minPixels?: number;
+	artifactRemoval?: OpenComicAIArtifactRemoval;
+}
+
+export interface OpenComicAIArtifactRemoval extends Omit<OpenComicAIOptions, 'keepBigHalftone'> {
+	model: ModelArtifactRemoval | 'auto';
+}
+
+export interface OpenComicAIPanels extends Omit<OpenComicAIOptions, 'keepBigHalftone'> {
+	model: ModelPanels | 'auto';
+	minPixels?: number;
+	upscale?: OpenComicAIUpscale; // TODO: Train a model specifically for this?
 }
 
 export interface Downloading {
@@ -773,16 +834,25 @@ interface Daemon {
 	push: (args: string[], spawn: Spawn) => void;
 }
 
-const DEFAULT_MODEL: Model = 'realcugan';
+const DEFAULT_MODEL: Model = 'opencomic-ai-upscale-lite';
 const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/f57820a3490e5c38984be02d73a2c208106efe3c/models/';
 
 const DAEMON_UPSCALERS: Upscaler[] = ['upscayl'];
 
-const modelsList: Model[] = [...Object.keys(models.upscale) as Model[], ...Object.keys(models.descreen) as Model[], ...Object.keys(models['artifact-removal']) as Model[]];
+const modelsList: Model[] = [
+	...Object.keys(models.upscale) as Model[],
+	...Object.keys(models.descreen) as Model[],
+	...Object.keys(models['artifact-removal']) as Model[],
+	...Object.keys(models['descreen-mask']) as Model[],
+	...Object.keys(models.panels) as Model[],
+];
+
 const modelsTypeList: Record<ModelType, Model[]> = {
 	upscale: Object.keys(models.upscale) as Model[],
 	descreen: Object.keys(models.descreen) as Model[],
 	'artifact-removal': Object.keys(models['artifact-removal']) as Model[],
+	'descreen-mask': Object.keys(models['descreen-mask']) as Model[],
+	panels: Object.keys(models.panels) as Model[],
 };
 
 export default class OpenComicAI {
@@ -796,11 +866,10 @@ export default class OpenComicAI {
 	public static pipelineColourspace: string | false = false;
 
 	private static daemons: Map<string, Daemon> = new Map();
-	public static concurrentDaemons: number = 3;
+	public static concurrentDaemons: number = 5;
 	public static daemonIdleTimeout: number = 60000; // 60 seconds
 
-	public static yolo = yolo;
-	public static yoloIdleTimeout: number = 60000; // 60 seconds
+	public static panels = panels;
 
 	private static resolve = (path: string): string => {
 
@@ -842,13 +911,6 @@ export default class OpenComicAI {
 	public static setDaemonIdleTimeout = (timeout: number = 60000): void => {
 
 		OpenComicAI.daemonIdleTimeout = timeout;
-
-	}
-
-	public static setYoloIdleTimeout = (timeout: number = 60000): void => {
-
-		OpenComicAI.yoloIdleTimeout = timeout;
-		yolo.setIdleTimeout(timeout);
 
 	}
 
@@ -894,7 +956,7 @@ export default class OpenComicAI {
 	public static setSharp = (sharp: any): void => {
 
 		OpenComicAI.sharp = sharp;
-		yolo.setSharp(sharp);
+		keepBigHalftone.setSharp(sharp);
 
 	}
 
@@ -910,7 +972,7 @@ export default class OpenComicAI {
 			throw new Error(`Model not found: ${model}`);
 
 		const _model = model as Model;
-		const modelInfo = models.upscale[_model] || models.descreen[_model] || models['artifact-removal'][_model];
+		const modelInfo = models.upscale[_model] || models.descreen[_model] || models['artifact-removal'][_model] || models['descreen-mask'][_model] || models.panels[_model];
 		const modelType = modelInfo.type as string;
 
 		return {
@@ -930,6 +992,13 @@ export default class OpenComicAI {
 		const result = upscalers[upscaler].platforms[process.platform]?.[process.arch] ?? upscalers[upscaler].platforms[process.platform]?.x64 ?? upscalers[upscaler].platforms.linux?.x64 ?? '';
 
 		return p.join(base, result);
+
+	}
+
+	public static intermediateDest = (dest: string, key: string = ''): string => {
+
+		const parsed = p.parse(dest);
+		return p.join(parsed.dir, `${key ? `${key}-` : ''}${crypto.randomUUID()}${parsed.ext}`);
 
 	}
 
@@ -1058,7 +1127,7 @@ export default class OpenComicAI {
 
 	}
 
-	public static pipeline = async (source: string, dest: string, steps: OpenComicAIOptions[], progress?: ((progress?: number) => void) | false, downloading?: Downloading | false): Promise<string> => {
+	public static pipeline = async (source: string, dest: string, steps: OpenComicAIOptions[], progress?: ((progress: number) => void) | false, downloading?: Downloading | false): Promise<string> => {
 
 		if(!OpenComicAI.modelsPath)
 			throw new Error('Models path is not set, use OpenComicAI.setModelsPath to set it before calling pipe.');
@@ -1070,10 +1139,13 @@ export default class OpenComicAI {
 		const parsed = p.parse(dest);
 		let prevIntermediateDest: string = '';
 
+		if(!parsed.ext)
+			throw new Error(`Invalid destination file format. Expected an image file with an extension (e.g. .png, .jpg, .webp), but got: "${dest}"`);
+
 		for(let i = 0, len = steps.length; i < len; i++)
 		{
 			const step = steps[i];
-			const intermediateDest = i < len - 1 ? p.join(p.dirname(dest), `${crypto.randomUUID()}${parsed.ext}`) : dest;
+			const intermediateDest = i < len - 1 ? OpenComicAI.intermediateDest(dest) : dest;
 
 			const _progress = (p: number | undefined) => {
 
@@ -1090,6 +1162,9 @@ export default class OpenComicAI {
 
 			await OpenComicAI.image(source, intermediateDest, step, _progress);
 
+			if(step.keepBigHalftone && step.model && modelsTypeList['descreen'].includes(step.model))
+				await keepBigHalftone.keep(source, dest, step.keepBigHalftone);
+
 			if(prevIntermediateDest && fs.existsSync(prevIntermediateDest))
 				await fsp.unlink(prevIntermediateDest);
 
@@ -1105,7 +1180,7 @@ export default class OpenComicAI {
 			if(srcMetadata.icc)
 			{
 				const iccPath = p.join(p.dirname(dest), `${crypto.randomUUID()}.icc`);
-				const iccImagePath = p.join(p.dirname(dest), `${crypto.randomUUID()}${parsed.ext}`);
+				const iccImagePath = OpenComicAI.intermediateDest(dest);
 
 				await fsp.writeFile(iccPath, srcMetadata.icc);
 
@@ -1205,11 +1280,14 @@ export default class OpenComicAI {
 
 		const model = options.model;
 		// const format = options.format ?? p.extname(source).slice(1);
-		const threads: number | boolean = options.threads ? +options.threads : false;
-		let noise: number | boolean = options.noise ? +options.noise : false;
-		let scale: number | boolean = options.scale ? +options.scale : false;
-		const tileSize: string | boolean = options.tileSize?.toString() ?? false;
-		const gpuId: string | boolean = options.gpuId ?? false;
+		const threads: number | false = options.threads ? +options.threads : false;
+		let noise: number | false = options.noise ? +options.noise : false;
+		let scale: number | false = options.scale ? +options.scale : false;
+		let tileSize: string | false = options.tileSize?.toString() ?? false;
+		let tileSizeFromMem128: number | false = false;
+		const maxTileSize: string | false = options.maxTileSize?.toString() ?? false;
+		const memorySafePercentage: string | false = options.memorySafePercentage?.toString() ?? false;
+		const gpuId: string | false = options.gpuId ?? false;
 		const tta: boolean = !!options.tta;
 
 		if(noise !== false && !modelInfo?.noise?.includes(noise))
@@ -1218,6 +1296,19 @@ export default class OpenComicAI {
 		if(scale && !modelInfo.scales.includes(scale))
 			scale = OpenComicAI.closest(modelInfo.scales, scale);
 
+		if(!tileSize || tileSize === 'auto')
+		{
+			if(modelInfo.tileSizeFromMem128)
+			{
+				tileSizeFromMem128 = modelInfo.tileSizeFromMem128;
+				tileSize = false;
+			}
+			else if(modelInfo.tileSize)
+			{
+				tileSize = modelInfo.tileSize.toString();
+			}
+		}
+
 		const args: string[] = [
 			'-m', modelInfo?.path as string,
 			// ...(format ? ['-f', format] : []),
@@ -1225,6 +1316,9 @@ export default class OpenComicAI {
 			...(noise !== false ? ['-n', noise.toString()] : []),
 			...(scale ? ['-s', scale.toString()] : []),
 			...(tileSize ? ['-t', tileSize] : []),
+			...(tileSizeFromMem128 ? ['-y', tileSizeFromMem128.toString()] : []),
+			...(maxTileSize ? ['-k', maxTileSize] : []),
+			...(memorySafePercentage ? ['-u', memorySafePercentage] : []),
 			...(gpuId ? ['-g', gpuId] : []),
 			...(tta ? ['-x'] : []),
 		];
@@ -1267,7 +1361,7 @@ export default class OpenComicAI {
 
 	}
 
-	private static image = async (source: string, dest: string, options?: OpenComicAIOptions, progress?: ((progress?: number) => void) | false): Promise<string> => {
+	public static image = async (source: string, dest: string, options?: OpenComicAIOptions, progress?: ((progress: number) => void) | false): Promise<string> => {
 
 		options = {...options};
 
@@ -1294,7 +1388,7 @@ export default class OpenComicAI {
 
 		let result = '';
 
-		// console.log(`Executing: ${binary} ${args.join(' ')}`);
+		console.log(`Running command: ${binary} ${args.join(' ')}`);
 
 		return new Promise<string>((resolve, reject) => {
 
@@ -1358,7 +1452,7 @@ export default class OpenComicAI {
 
 	private static spawnDaemon = async (binary: string, args: string[], spawn?: Spawn): Promise<void> => {
 
-		const initFlags = ['-m', '-n', '-g', '-z'];
+		const initFlags = ['-m', '-n', '-g', '-z', '-t', '-y', '-u', '-k'];
 
 		const initArgs: string[] = [];
 		const daemonArgs: string[] = [];
@@ -1406,6 +1500,12 @@ export default class OpenComicAI {
 
 				data = data.toString();
 				const ready = /Ready\>/.test(data);
+				
+				if(/Error\:/.test(data))
+				{
+					const message = data.split('Error:')[1].trim().split('\n')[0];
+					if(currentSpawn) currentSpawn.error(`Error: ${message}`);
+				}
 
 				if(ready && !modelLoaded && !currentSpawn) // First ready
 				{
