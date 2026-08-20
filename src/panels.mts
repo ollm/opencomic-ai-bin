@@ -6,7 +6,8 @@ import {maxComponents} from './descreen/keep-big-halftone.mjs';
 import fillHoles from './yolo/fill-holes.mjs';
 import yolo, {Box} from './yolo.mjs';
 
-const tempDir = os.tmpdir();
+let debug = false;
+let tempDir = os.tmpdir();
 
 async function image(source: string, options: OpenComicAIPanels): Promise<Detection> {
 
@@ -45,6 +46,7 @@ async function image(source: string, options: OpenComicAIPanels): Promise<Detect
 	console.timeEnd('OpenComicAI.image');
 
 	const green = await OpenComicAI.sharp(panelsDest).extractChannel('green');
+	await fsp.unlink(panelsDest);
 
 	if(/inverted/.test(modelInfo.name))
 		await green.negate();
@@ -74,28 +76,33 @@ async function image(source: string, options: OpenComicAIPanels): Promise<Detect
 		maskBuffer = await green.raw().toBuffer();
 	}
 
-	// DEBUG: Save the maskBuffer to a file for inspection
-	await OpenComicAI.sharp(Buffer.from(maskBuffer), {
-		raw: {
-			width: size,
-			height: size,
-			channels: 1,
-		},
-	}).toFile(p.join(tempDir, 'mask-buffer.png'));
+	if(debug)
+	{
+		// DEBUG: Save the maskBuffer to a file for inspection
+		await OpenComicAI.sharp(Buffer.from(maskBuffer), {
+			raw: {
+				width: size,
+				height: size,
+				channels: 1,
+			},
+		}).toFile(p.join(tempDir, 'mask-buffer.png'));
+	}
 
 	console.time('maxComponents');
 	const filteredMask = maxComponents(maskBuffer, size, size, minPixels, 'panels');
 	console.timeEnd('maxComponents');
 
-	// DEBUG: Save the filtered mask to a file for inspection
-	await OpenComicAI.sharp(Buffer.from(filteredMask.image), {
-		raw: {
-			width: filteredMask.width,
-			height: filteredMask.height,
-			channels: 1,
-		},
-	}).toFile(p.join(tempDir, 'filtered-mask.png'));
-
+	if(debug)
+	{
+		// DEBUG: Save the filtered mask to a file for inspection
+		await OpenComicAI.sharp(Buffer.from(filteredMask.image), {
+			raw: {
+				width: filteredMask.width,
+				height: filteredMask.height,
+				channels: 1,
+			},
+		}).toFile(p.join(tempDir, 'filtered-mask.png'));
+	}
 
 	const boxes: Box[] = [];
 
@@ -128,14 +135,17 @@ async function image(source: string, options: OpenComicAIPanels): Promise<Detect
 		// if(true)
 		componentMask = fillHoles(componentMask, filteredMask.width, filteredMask.height) as Uint8Array<ArrayBuffer>;
 
-		await OpenComicAI.sharp(Buffer.from(componentMask), {
-			raw: {
-				width: size,
-				height: size,
-				channels: 1,
-			},
-		}).toFile(p.join(tempDir, `component-${i}.png`));
-
+		if(debug)
+		{
+			// DEBUG: Save the component mask to a file for inspection
+			await OpenComicAI.sharp(Buffer.from(componentMask), {
+				raw: {
+					width: size,
+					height: size,
+					channels: 1,
+				},
+			}).toFile(p.join(tempDir, `component-${i}.png`));
+		}
 
 		boxes.push({
 			label: 'panel',
@@ -147,7 +157,6 @@ async function image(source: string, options: OpenComicAIPanels): Promise<Detect
 			box: box,
 			mask: componentMask,
 		});
-
 	}
 
 	return {
@@ -164,4 +173,8 @@ export default {
 	image,
 	path: yolo.path,
 	render: yolo.render,
+	set debug(value: boolean) {debug = value},
+	get debug() {return debug},
+	set tempDir(dir: string) {tempDir = dir},
+	get tempDir() {return tempDir},
 }

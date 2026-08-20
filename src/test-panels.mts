@@ -1,5 +1,6 @@
 import sharp from 'sharp';
 import OpenComicAI from './index.mjs';
+import panels from './panels.mjs';
 import {getArg, resolve} from './test-utils.mjs';
 
 const modelsPath = resolve(getArg('--models-path') || './assets/models');
@@ -7,8 +8,10 @@ const model = getArg('--model') || '';
 const image = resolve(getArg('--image') || '');
 const dest = resolve(getArg('--dest') || './debug');
 
-console.log(model, image);
+panels.debug = true;
+panels.tempDir = resolve(dest);
 
+console.log(model, image);
 
 if(!model || !image)
 {
