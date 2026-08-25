@@ -34,15 +34,15 @@ const dest = resolve(getArg('--dest') || './debug');
 	// Keep ICC profile from input image, requires sharp instance
 	OpenComicAI.keepIccProfile('rgb16');
 
-	await OpenComicAI.pipeline(image, p.join(dest, '/test.jpg'), [
+	await OpenComicAI.pipeline(image, p.join(dest, '/test.png'), [
 		{
 			model: 'opencomic-ai-descreen-hard-lite',
 			// tileSize: 512,
 			keepBigHalftone: {
-				model: 'opencomic-ai-descreen-mask-balanced-v3-test2-100000',
+				model: 'opencomic-ai-descreen-mask-fast-v3-test-500000',
 				minSize: 2.5,
 				// tileSize: 5120,
-				tileSize: 512,
+				tileSize: 512, // TODO: This is not necesary when auto tile size is implemented
 				artifactRemoval: {
 					model: 'opencomic-ai-artifact-removal-compact',
 				},

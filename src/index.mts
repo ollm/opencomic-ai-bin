@@ -960,7 +960,6 @@ export default class OpenComicAI {
 	public static setSharp = (sharp: any): void => {
 
 		OpenComicAI.sharp = sharp;
-		keepBigHalftone.setSharp(sharp);
 
 	}
 
@@ -1002,7 +1001,8 @@ export default class OpenComicAI {
 	public static intermediateDest = (dest: string, key: string = ''): string => {
 
 		const parsed = p.parse(dest);
-		return p.join(parsed.dir, `${key ? `${key}-` : ''}${crypto.randomUUID()}${parsed.ext}`);
+		// return p.join(parsed.dir, `${key ? `${key}-` : ''}${crypto.randomUUID()}${parsed.ext}`);
+		return p.join(parsed.dir, `${key ? `${key}-` : ''}${crypto.randomUUID()}.png`); // Force PNG for intermediate files to avoid lossy compression artifacts
 
 	}
 
@@ -1062,9 +1062,7 @@ export default class OpenComicAI {
 
 	}
 
-	public static getModels = async (steps: OpenComicAIOptions[], downloading?: Downloading | false): Promise<void> => {
-
-		const toGetModels: Map<string, string> = new Map();
+	private static _getModels = (steps: OpenComicAIOptions[], toGetModels: Map<string, string>): Map<string, string> => {
 
 		for(const step of steps)
 		{
@@ -1083,7 +1081,31 @@ export default class OpenComicAI {
 					toGetModels.set(fileUrl, filePath);
 				}
 			}
+
+			if(step.keepBigHalftone)
+			{
+				OpenComicAI._getModels([step.keepBigHalftone], toGetModels);
+			}
+
+			if('upscale' in step && step.upscale)
+			{
+				OpenComicAI._getModels([step.upscale], toGetModels);
+			}
+
+			if('artifactRemoval' in step && step.artifactRemoval)
+			{
+				OpenComicAI._getModels([step.artifactRemoval], toGetModels);
+			}
 		}
+
+		return toGetModels;
+
+	}
+
+	public static getModels = async (steps: OpenComicAIOptions[], downloading?: Downloading | false): Promise<void> => {
+
+		let toGetModels: Map<string, string> = new Map();
+		toGetModels = OpenComicAI._getModels(steps, toGetModels);
 
 		if(toGetModels.size > 0)
 		{
@@ -1191,31 +1213,7 @@ export default class OpenComicAI {
 				// Apply ICC profile
 				let sharp = await OpenComicAI.sharp(dest).pipelineColourspace(OpenComicAI.pipelineColourspace).withIccProfile(iccPath);
 
-				const ext = parsed.ext.toLowerCase();
-
-				switch(ext)
-				{
-					case '.jpg':
-					case '.jpeg':
-					case '.jpe':
-
-						sharp = sharp.jpeg({quality: 100, force: true});
-
-						break;
-
-					case 'webp':
-
-						sharp = sharp.webp({quality: 100, force: true});
-
-						break;
-
-					default:
-
-						sharp.png({compressionLevel: 0, force: true});
-
-						break;
-				}
-
+				sharp = OpenComicAI.configureOutputFormat(sharp, parsed.ext);
 				await sharp.toFile(iccImagePath);
 
 				// Replace dest with iccImagePath
@@ -1227,6 +1225,35 @@ export default class OpenComicAI {
 		}
 
 		return source;
+
+	}
+
+	public static configureOutputFormat = (sharp: any, ext: string): any => {
+
+		switch(ext.toLowerCase())
+		{
+			case '.jpg':
+			case '.jpeg':
+			case '.jpe':
+
+				sharp = sharp.jpeg({quality: 100, force: true});
+
+				break;
+
+			case '.webp':
+
+				sharp = sharp.webp({quality: 100, force: true});
+
+				break;
+
+			default:
+
+				sharp = sharp.png({compressionLevel: 0, force: true});
+
+				break;
+		}
+
+		return sharp;
 
 	}
 

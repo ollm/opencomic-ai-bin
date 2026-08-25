@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import OpenComicAI, {OpenComicAIOptions, OpenComicAIKeepBigHalftone} from '../index.mjs';
 
+let debug = false;
+
 interface Image {
 	data: Uint8Array;
 	width: number;
@@ -35,7 +37,7 @@ interface Tile {
 
 async function loadImage(source: string): Promise<Image> {
 
-	const {data, info} = await sharp(source).grayscale().raw().toBuffer({resolveWithObject: true});
+	const {data, info} = await OpenComicAI.sharp(source).grayscale().raw().toBuffer({resolveWithObject: true});
 
 	return {
 		data: data,
@@ -221,35 +223,35 @@ function removeSinglePixels(mask: Uint8Array, width: number, height: number): Ui
 
 async function histogram(image: string, radius: number = 2): Promise<{mask: Uint8Array, width: number, height: number, peaks: number[]}> {
 
-	console.time('Array');
+	if(debug) console.time('Array');
 	// const histogram = new Array(256).fill(0);
 	const histogram = new Uint32Array(256);
-	console.timeEnd('Array');
+	if(debug) console.timeEnd('Array');
 
-	console.time('loadImage');
+	if(debug) console.time('loadImage');
 
 	const {data, width, height} = await loadImage(image);
-	console.timeEnd('loadImage');
-	console.time('processImage');
+	if(debug) console.timeEnd('loadImage');
+	if(debug) console.time('processImage');
 
 	for(let i = 0, len = data.length; i < len; i++)
 	{
 		histogram[data[i]]++;
 	}
 
-	console.timeEnd('processImage');
+	if(debug) console.timeEnd('processImage');
 
-	console.time('smoothHistogram');
+	if(debug) console.time('smoothHistogram');
 	const smoothedHistogram = smoothHistogram(histogram, radius);
-	console.timeEnd('smoothHistogram');
-	console.time('histogramPeaks');
+	if(debug) console.timeEnd('smoothHistogram');
+	if(debug) console.time('histogramPeaks');
 	const peaks = histogramPeaks(smoothedHistogram);
-	console.timeEnd('histogramPeaks');
-	console.time('getMaskColorsFromPeaks');
+	if(debug) console.timeEnd('histogramPeaks');
+	if(debug) console.time('getMaskColorsFromPeaks');
 	const maskColorsFromPeaks = getMaskColorsFromPeaks(peaks);
-	console.timeEnd('getMaskColorsFromPeaks');
+	if(debug) console.timeEnd('getMaskColorsFromPeaks');
 
-	console.time('for-loop');
+	if(debug) console.time('for-loop');
 
 	const smoothedMask = new Uint8Array(data.length);
 
@@ -261,10 +263,10 @@ async function histogram(image: string, radius: number = 2): Promise<{mask: Uint
 		smoothedMask[i] = color;
 	}
 
-	console.timeEnd('for-loop');
-	console.time('removeSinglePixels');
+	if(debug) console.timeEnd('for-loop');
+	if(debug) console.time('removeSinglePixels');
 	const removedSinglePixels = removeSinglePixels(smoothedMask, width, height);
-	console.timeEnd('removeSinglePixels');
+	if(debug) console.timeEnd('removeSinglePixels');
 	return {mask: removedSinglePixels, width, height, peaks};
 }
 
@@ -469,7 +471,7 @@ function saveTiles(components: Components, color: number, source: string, dest: 
 	for(const [index, box] of mergedBoxes.entries())
 	{
 		const tileDest = OpenComicAI.intermediateDest(dest)
-		sharp(source).extract({left: box.x, top: box.y, width: box.width, height: box.height}).toFile(tileDest);
+		OpenComicAI.sharp(source).extract({left: box.x, top: box.y, width: box.width, height: box.height}).toFile(tileDest);
 
 		tiles.push({
 			file: tileDest,
@@ -487,43 +489,45 @@ function saveTiles(components: Components, color: number, source: string, dest: 
 
 async function keep(source: string, dest: string, options: OpenComicAIKeepBigHalftone, progress?: ((progress: number) => void) | false): Promise<void> {
 
-	console.time('keep');
+	const parsed = p.parse(dest);
+
+	if(debug) console.time('keep');
 
 	const minSize = (options.minSize ?? 1.0) / 100;
 
-	console.time('OpenComicAI.image');
+	if(debug) console.time('OpenComicAI.image');
 	
 	const maskDest = OpenComicAI.intermediateDest(dest);
 	await OpenComicAI.image(source, maskDest, options, progress);
 
-	console.timeEnd('OpenComicAI.image');
+	if(debug) console.timeEnd('OpenComicAI.image');
 
-	console.time('histogram');
+	if(debug) console.time('histogram');
 	const {mask, width, height, peaks} = await histogram(maskDest, 5);
-	console.timeEnd('histogram');
+	if(debug) console.timeEnd('histogram');
 
-	console.time('maxComponents');
+	if(debug) console.time('maxComponents');
 	const filteredMask = maxComponents(mask, width, height, options.minPixels ?? 50);
-	console.timeEnd('maxComponents');
+	if(debug) console.timeEnd('maxComponents');
 
 	// DEBUG
-	await sharp(filteredMask.image, {raw: {width, height, channels: 1}}).png().toFile(OpenComicAI.intermediateDest(dest));
+	if(debug) await OpenComicAI.sharp(filteredMask.image, {raw: {width, height, channels: 1}}).png().toFile(OpenComicAI.intermediateDest(dest));
 
 	const color = 255 - Math.round(height * minSize);
 
 	// console.log(color);
-	console.log(color); // 19.99 is 28.00 in krita, aprox?
+	if(debug) console.log(color); // 19.99 is 28.00 in krita, aprox?
 
 	if(options.artifactRemoval)
 	{
 		const tiles = saveTiles(filteredMask, color, source, dest);
 
-		console.time('tiles');
+		if(debug) console.time('tiles');
 
-		const descreenedImage = await sharp(dest).raw().toBuffer({resolveWithObject: true});
+		const descreenedImage = await OpenComicAI.sharp(dest).raw().toBuffer({resolveWithObject: true});
 		const channels = descreenedImage.info.channels ?? 3;
 
-		console.log(channels);
+		if(debug) console.log(channels);
 
 		const {width: imageWidth, height: imageHeight} = descreenedImage.info;
 		const data = descreenedImage.data;
@@ -533,9 +537,9 @@ async function keep(source: string, dest: string, options: OpenComicAIKeepBigHal
 			const tileDest = OpenComicAI.intermediateDest(dest);
 			await OpenComicAI.image(tile.file, tileDest, options.artifactRemoval);
 
-			console.time('tile');
+			if(debug) console.time('tile');
 
-			const image = await sharp(tileDest).raw().toBuffer({resolveWithObject: true});
+			const image = await OpenComicAI.sharp(tileDest).raw().toBuffer({resolveWithObject: true});
 
 			// const setPixels = new Set<number>(tile.pixels);
 			const pixelsCoord = tile.pixelsCoord!;
@@ -596,7 +600,7 @@ async function keep(source: string, dest: string, options: OpenComicAIKeepBigHal
 			}
 			*/
 
-			console.timeEnd('tile');
+			if(debug) console.timeEnd('tile');
 
 			// Replace source with keep image
 			await fsp.unlink(tileDest);
@@ -606,15 +610,18 @@ async function keep(source: string, dest: string, options: OpenComicAIKeepBigHal
 
 		const keepDest = OpenComicAI.intermediateDest(dest);
 
-		await sharp(descreenedImage.data, {
+		let sharp = OpenComicAI.sharp(descreenedImage.data, {
 			raw: {
 				width: imageWidth,
 				height: imageHeight,
 				channels,
 			},
-		}).toFile(keepDest);
+		});
 
-		console.timeEnd('tiles');
+		sharp = OpenComicAI.configureOutputFormat(sharp, parsed.ext);
+		await sharp.toFile(keepDest);
+
+		if(debug) console.timeEnd('tiles');
 
 		await fsp.unlink(dest);
 		await fsp.unlink(maskDest);
@@ -626,27 +633,10 @@ async function keep(source: string, dest: string, options: OpenComicAIKeepBigHal
 		fs.renameSync(maskDest, dest);
 	}
 
-
-	/*
-	// Replace source with keep image
-	await fsp.unlink(source);
-	fs.renameSync(maskDest, source);
-	*/
-
-	console.timeEnd('keep');
-}
-
-let sharp: any = false;
-
-function setSharp(_sharp: any): void {
-
-	sharp = _sharp;
-
+	if(debug) console.timeEnd('keep');
 }
 
 export default {
 	keep,
 	histogram,
-	setSharp,
-	get sharp() {return sharp},
 }
