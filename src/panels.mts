@@ -26,7 +26,8 @@ async function image(source: string, options: OpenComicAIPanels, downloading?: D
 
 	let minPixels = options.minPixels ?? 50;
 
-	console.time('Resize sharp');
+
+	if(debug) console.time('Resize sharp');
 	const dest = p.join(tempDir, 'example.png');
 
 	const sharpDest = OpenComicAI.intermediateDest(dest);
@@ -65,14 +66,14 @@ async function image(source: string, options: OpenComicAIPanels, downloading?: D
 		[0, 0, 1],
 	]).png().toFile(sharpDest);
 
-	console.timeEnd('Resize sharp');
+	if(debug) console.timeEnd('Resize sharp');
 
-	console.time('OpenComicAI.image');
+	if(debug) console.time('OpenComicAI.image');
 		
 	await OpenComicAI.image(sharpDest, panelsDest, options);
 	await fsp.unlink(sharpDest);
 
-	console.timeEnd('OpenComicAI.image');
+	if(debug) console.timeEnd('OpenComicAI.image');
 
 	const green = await OpenComicAI.sharp(panelsDest).extractChannel('green');
 
@@ -119,9 +120,9 @@ async function image(source: string, options: OpenComicAIPanels, downloading?: D
 		}).toFile(p.join(tempDir, 'mask-buffer.png'));
 	}
 
-	console.time('maxComponents');
+	if(debug) console.time('maxComponents');
 	const filteredMask = maxComponents(maskBuffer, width, height, minPixels, 'panels');
-	console.timeEnd('maxComponents');
+	if(debug) console.timeEnd('maxComponents');
 
 	if(debug)
 	{

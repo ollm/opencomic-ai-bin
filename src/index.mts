@@ -1392,7 +1392,7 @@ export default class OpenComicAI {
 
 		let result = '';
 
-		console.log(`Running command: ${binary} ${args.join(' ')}`);
+		// console.log(`Running command: ${binary} ${args.join(' ')}`);
 
 		return new Promise<string>((resolve, reject) => {
 
