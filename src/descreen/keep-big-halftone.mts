@@ -405,7 +405,7 @@ export function maxComponents(mask: Uint8Array, width: number, height: number, m
 	return maxComponents(filteredMask, width, height, 1);
 }*/
 
-function saveTiles(components: Components, color: number, source: string, dest: string): Tile[] {
+async function saveTiles(components: Components, color: number, source: string, dest: string): Promise<Tile[]> {
 
 	const boxes: {x: number, y: number, width: number, height: number, pixels: number[], pixelsCoord: number[][]}[] = [];
 
@@ -457,6 +457,7 @@ function saveTiles(components: Components, color: number, source: string, dest: 
 				mBox.width = maxX - minX;
 				mBox.height = maxY - minY;
 				mBox.pixels = mBox.pixels.concat(box.pixels);
+				mBox.pixelsCoord = mBox.pixelsCoord.concat(box.pixelsCoord);
 				merged = true;
 				break;
 			}
@@ -471,7 +472,7 @@ function saveTiles(components: Components, color: number, source: string, dest: 
 	for(const [index, box] of mergedBoxes.entries())
 	{
 		const tileDest = OpenComicAI.intermediateDest(dest)
-		OpenComicAI.sharp(source).extract({left: box.x, top: box.y, width: box.width, height: box.height}).toFile(tileDest);
+		await OpenComicAI.sharp(source).extract({left: box.x, top: box.y, width: box.width, height: box.height}).toFile(tileDest);
 
 		tiles.push({
 			file: tileDest,
@@ -485,6 +486,38 @@ function saveTiles(components: Components, color: number, source: string, dest: 
 	}
 
 	return tiles;
+}
+
+function copyExpandedPixels(target: Uint8Array, targetWidth: number, targetHeight: number, channels: number, replacement: Uint8Array, replacementWidth: number, replacementHeight: number, pixelsCoord: number[][], left: number = 0, top: number = 0): void {
+	
+	for(const [x, y] of pixelsCoord)
+	{
+		for(let y2 = -1; y2 <= 1; y2++)
+		{
+			for(let x2 = -1; x2 <= 1; x2++)
+			{
+				const nx = x + x2;
+				const ny = y + y2;
+
+				if(nx < 0 || nx >= targetWidth || ny < 0 || ny >= targetHeight)
+					continue;
+
+				const replacementX = nx - left;
+				const replacementY = ny - top;
+
+				if(replacementX < 0 || replacementX >= replacementWidth || replacementY < 0 || replacementY >= replacementHeight)
+					continue;
+
+				const replacementIndex = (replacementY * replacementWidth + replacementX) * channels;
+				const targetIndex = (ny * targetWidth + nx) * channels;
+
+				for(let c = 0; c < channels; c++)
+				{
+					target[targetIndex + c] = replacement[replacementIndex + c];
+				}
+			}
+		}
+	}
 }
 
 async function keep(source: string, dest: string, options: OpenComicAIKeepBigHalftone, progress?: ((progress: number) => void) | false): Promise<void> {
@@ -501,6 +534,8 @@ async function keep(source: string, dest: string, options: OpenComicAIKeepBigHal
 	await OpenComicAI.image(source, maskDest, options, progress);
 
 	if(debug) console.timeEnd('OpenComicAI.image');
+
+	if(debug) await OpenComicAI.sharp(maskDest).png().toFile(OpenComicAI.intermediateDest(dest));
 
 	if(debug) console.time('histogram');
 	const {mask, width, height, peaks} = await histogram(maskDest, 5);
@@ -520,7 +555,7 @@ async function keep(source: string, dest: string, options: OpenComicAIKeepBigHal
 
 	if(options.artifactRemoval)
 	{
-		const tiles = saveTiles(filteredMask, color, source, dest);
+		const tiles = await saveTiles(filteredMask, color, source, dest);
 
 		if(debug) console.time('tiles');
 
@@ -541,64 +576,7 @@ async function keep(source: string, dest: string, options: OpenComicAIKeepBigHal
 
 			const image = await OpenComicAI.sharp(tileDest).raw().toBuffer({resolveWithObject: true});
 
-			// const setPixels = new Set<number>(tile.pixels);
-			const pixelsCoord = tile.pixelsCoord!;
-
-			const {left: tileLeft, top: tileTop, width: tileWidth, height: tileHeight} = tile;
-
-			for(const [x, y] of pixelsCoord)
-			{
-				for(let y2 = -1; y2 <= 1; y2++)
-				{
-					for(let x2 = -1; x2 <= 1; x2++)
-					{
-						const nx = x + x2;
-						const ny = y + y2;
-
-						if(nx < 0 || nx >= imageWidth || ny < 0 || ny >= imageHeight)
-							continue;
-
-						const tx = nx - tileLeft;
-						const ty = ny - tileTop;
-
-						if(tx < 0 || tx >= tileWidth || ty < 0 || ty >= tileHeight)
-							continue;
-
-						const tyRow = ty * tileWidth;
-						const iyRow = ny * imageWidth;
-
-						const tileIndex = (tyRow + tx) * channels;
-						const imageIndex = (iyRow + nx) * channels;
-
-						for(let c = 0; c < channels; c++)
-						{
-							data[imageIndex + c] = image.data[tileIndex + c];
-						}
-					}
-				}
-			}
-
-			/*
-			for(let y = 0; y < tile.height; y++)
-			{
-				for(let x = 0; x < tile.width; x++)
-				{
-					const destPixelIndex = (tile.top + y) * descreenedImage.info.width + (tile.left + x);
-
-					if(!setPixels.has(destPixelIndex))
-						continue;
-
-					const tilePixelIndex = y * tile.width + x;
-					const tileIndex = tilePixelIndex * channels;
-					const imageIndex = destPixelIndex * channels;
-
-					for(let c = 0; c < channels; c++)
-					{
-						descreenedImage.data[imageIndex + c] = image.data[tileIndex + c];
-					}
-				}
-			}
-			*/
+			copyExpandedPixels(data, imageWidth, imageHeight, channels, image.data, image.info.width, image.info.height, tile.pixelsCoord!, tile.left, tile.top);
 
 			if(debug) console.timeEnd('tile');
 
@@ -609,7 +587,6 @@ async function keep(source: string, dest: string, options: OpenComicAIKeepBigHal
 		}
 
 		const keepDest = OpenComicAI.intermediateDest(dest);
-
 		let sharp = OpenComicAI.sharp(descreenedImage.data, {
 			raw: {
 				width: imageWidth,
@@ -629,8 +606,37 @@ async function keep(source: string, dest: string, options: OpenComicAIKeepBigHal
 	}
 	else
 	{
+		const sourceImage = await OpenComicAI.sharp(source).raw().toBuffer({resolveWithObject: true});
+		const descreenedImage = await OpenComicAI.sharp(dest).raw().toBuffer({resolveWithObject: true});
+		const channels = descreenedImage.info.channels ?? 3;
+		const sourceChannels = sourceImage.info.channels ?? 3;
+		const {width: imageWidth, height: imageHeight} = descreenedImage.info;
+		const sourceData = sourceImage.data;
+		const data = descreenedImage.data;
+
+		for(const component of filteredMask.components)
+		{
+			if(component.color > color)
+				continue;
+
+			copyExpandedPixels(data, imageWidth, imageHeight, channels, sourceData, sourceImage.info.width, sourceImage.info.height, component.pixelsCoord);
+		}
+
+		const keepDest = OpenComicAI.intermediateDest(dest);
+		let sharp = OpenComicAI.sharp(data, {
+			raw: {
+				width: imageWidth,
+				height: imageHeight,
+				channels,
+			},
+		});
+
+		sharp = OpenComicAI.configureOutputFormat(sharp, parsed.ext);
+		await sharp.toFile(keepDest);
+
 		await fsp.unlink(dest);
-		fs.renameSync(maskDest, dest);
+		await fsp.unlink(maskDest);
+		fs.renameSync(keepDest, dest);
 	}
 
 	if(debug) console.timeEnd('keep');
