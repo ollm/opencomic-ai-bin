@@ -2,11 +2,14 @@ import p from 'node:path';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import crypto from 'node:crypto';
+import {fileURLToPath} from 'node:url';
 import {spawn} from 'node:child_process';
 import panels from './panels.mjs';
 import keepBigHalftone from './descreen/keep-big-halftone.mjs';
 
-const ___dirname = typeof __dirname !== 'undefined' ? __dirname : import.meta.dirname;
+export type {Box, Detection} from './yolo.mjs';
+
+const ___dirname = typeof module !== 'undefined' && typeof __dirname !== 'undefined' ? __dirname : p.dirname(fileURLToPath(import.meta.url));
 
 export type Formats =
 	| 'bmp'
@@ -684,16 +687,16 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		},
 	},
 	'descreen-mask': {
-		'opencomic-ai-descreen-mask-balanced-v3-test2-100000': { // TODO: Test model
-			name: 'OpenComic AI Descreen Mask Balanced v3 Test Model 100000',
+		'opencomic-ai-descreen-mask-fast-v3-test-500000': { // TODO: Test model
+			name: 'OpenComic AI Descreen Mask Fast v3 Test Model 500000',
 			upscaler: 'upscayl',
 			scales: [1],
 			noise: undefined,
 			latency: 0,
 			folder: './models',
 			files: [
-				'opencomic-ai-descreen-mask-balanced-v3-test2-100000.bin',
-				'opencomic-ai-descreen-mask-balanced-v3-test2-100000.param',
+				'opencomic-ai-descreen-mask-fast-v3-test-500000.bin',
+				'opencomic-ai-descreen-mask-fast-v3-test-500000.param',
 			],
 		},
 	},
@@ -804,6 +807,7 @@ export interface OpenComicAIArtifactRemoval extends Omit<OpenComicAIOptions, 'ke
 export interface OpenComicAIPanels extends Omit<OpenComicAIOptions, 'keepBigHalftone'> {
 	model: ModelPanels | 'auto';
 	minPixels?: number;
+	keepAspectRatio?: boolean;
 	upscale?: OpenComicAIUpscale; // TODO: Train a model specifically for this?
 }
 
@@ -835,7 +839,7 @@ interface Daemon {
 }
 
 const DEFAULT_MODEL: Model = 'opencomic-ai-upscale-lite';
-const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/1624cdc3544d1716f51a86baac963be67ed79777/models/';
+const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/75202ff7ba2728b04b756343bea8a42f90288769/models/';
 
 const DAEMON_UPSCALERS: Upscaler[] = ['upscayl'];
 
@@ -1058,7 +1062,7 @@ export default class OpenComicAI {
 
 	}
 
-	private static getModels = async (steps: OpenComicAIOptions[], downloading?: Downloading | false): Promise<void> => {
+	public static getModels = async (steps: OpenComicAIOptions[], downloading?: Downloading | false): Promise<void> => {
 
 		const toGetModels: Map<string, string> = new Map();
 
