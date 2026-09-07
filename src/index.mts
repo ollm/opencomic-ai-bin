@@ -32,7 +32,7 @@ export type Formats =
 	| 'tiff'
 	| 'webp';
 
-export type ModelType = 'upscale' | 'descreen' | 'descreen-mask' | 'artifact-removal' | 'panels';
+export type ModelType = 'upscale' | 'descreen' | 'descreen-mask' | 'artifact-removal' | 'panels' | 'custom';
 export type Upscaler = 'realcugan' | 'waifu2x' | 'upscayl';
 export type Speed = 'Very Fast' | 'Fast' | 'Medium' | 'Slow' | 'Very Slow';
 
@@ -715,6 +715,8 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			],
 		},
 	},
+	custom: {
+	}
 };
 
 const modelSpeed = (latency: number): Speed => {
@@ -767,13 +769,15 @@ models = {
 	'artifact-removal': parseModels(models['artifact-removal'], 'artifact-removal'),
 	'descreen-mask': parseModels(models['descreen-mask'], 'descreen-mask'),
 	panels: parseModels(models.panels, 'panels'),
+	custom: parseModels(models.custom, 'custom'),
 };
 
-export type Model = keyof typeof models.upscale & keyof typeof models.descreen & keyof typeof models['artifact-removal'] & keyof typeof models['descreen-mask'] & keyof typeof models.panels & keyof typeof scalesModels;
+export type Model = keyof typeof models.upscale | keyof typeof models.descreen | keyof typeof models['artifact-removal'] | keyof typeof models['descreen-mask'] | keyof typeof models.panels | ModelCustom | keyof typeof scalesModels;
 export type ModelUpscale = keyof typeof models.upscale;
 export type ModelArtifactRemoval = keyof typeof models['artifact-removal'];
 export type ModelMask = keyof typeof models['descreen-mask'];
 export type ModelPanels = keyof typeof models.panels;
+export type ModelCustom = string;
 
 export interface OpenComicAIOptions {
 	model?: Model;
@@ -786,6 +790,7 @@ export interface OpenComicAIOptions {
 	gpuId?: string;
 	threads?: number;
 	tta?: boolean;
+	fp32?: boolean;
 	keepBigHalftone?: OpenComicAIKeepBigHalftone;
 }
 
@@ -849,6 +854,7 @@ const modelsList: Model[] = [
 	...Object.keys(models['artifact-removal']) as Model[],
 	...Object.keys(models['descreen-mask']) as Model[],
 	...Object.keys(models.panels) as Model[],
+	...Object.keys(models.custom) as Model[],
 ];
 
 const modelsTypeList: Record<ModelType, Model[]> = {
@@ -857,6 +863,7 @@ const modelsTypeList: Record<ModelType, Model[]> = {
 	'artifact-removal': Object.keys(models['artifact-removal']) as Model[],
 	'descreen-mask': Object.keys(models['descreen-mask']) as Model[],
 	panels: Object.keys(models.panels) as Model[],
+	custom: Object.keys(models.custom) as Model[],
 };
 
 export default class OpenComicAI {
@@ -897,6 +904,44 @@ export default class OpenComicAI {
 			throw new Error(`Models path does not exist: ${path}`);
 
 		OpenComicAI.modelsPath = path;
+
+	}
+
+	public static setCustomModel = (model: ModelObject): void => {
+
+		if(!model.key)
+			throw new Error('Custom model must have a key');
+
+		if(!model.type)
+			throw new Error('Custom model must have a type');
+
+		if(!model.name)
+			throw new Error('Custom model must have a name');
+
+		if(!model.upscaler)
+			throw new Error('Custom model must have an upscaler');
+
+		if(!upscalers[model.upscaler])
+			throw new Error(`Unknown upscaler: ${model.upscaler}`);
+
+		if(!model.scales || !model.scales.length)
+			throw new Error('Custom model must have scales');
+
+		if(!model.files || !model.files.length)
+			throw new Error('Custom model must have files');
+
+		OpenComicAI.models.custom[model.key] = {
+			...model,
+			key: model.key,
+			speed: modelSpeed(model.latency),
+			supportCurrentPlatform: upscalers[model.upscaler].platforms[process.platform]?.[process.arch] ? true : false,
+		};
+
+		if(!modelsList.includes(model.key))
+			modelsList.push(model.key);
+
+		if(!modelsTypeList.custom.includes(model.key))
+			modelsTypeList.custom.push(model.key);
 
 	}
 
@@ -975,7 +1020,7 @@ export default class OpenComicAI {
 			throw new Error(`Model not found: ${model}`);
 
 		const _model = model as Model;
-		const modelInfo = models.upscale[_model] || models.descreen[_model] || models['artifact-removal'][_model] || models['descreen-mask'][_model] || models.panels[_model];
+		const modelInfo = models.upscale[_model] || models.descreen[_model] || models['artifact-removal'][_model] || models['descreen-mask'][_model] || models.panels[_model] || models.custom[_model];
 		const modelType = modelInfo.type as string;
 
 		return {
@@ -1188,8 +1233,8 @@ export default class OpenComicAI {
 
 			await OpenComicAI.image(source, intermediateDest, step, _progress);
 
-			if(step.keepBigHalftone && step.model && modelsTypeList['descreen'].includes(step.model))
-				await keepBigHalftone.keep(source, dest, step.keepBigHalftone);
+			if(step.keepBigHalftone && step.model && OpenComicAI.model(step.model).type === 'descreen')
+				await keepBigHalftone.keep(source, intermediateDest, step.keepBigHalftone);
 
 			if(prevIntermediateDest && fs.existsSync(prevIntermediateDest))
 				await fsp.unlink(prevIntermediateDest);
@@ -1320,6 +1365,7 @@ export default class OpenComicAI {
 		const memorySafePercentage: string | false = options.memorySafePercentage?.toString() ?? false;
 		const gpuId: string | false = options.gpuId ?? false;
 		const tta: boolean = !!options.tta;
+		const fp32: boolean = !!options.fp32;
 
 		if(noise !== false && !modelInfo?.noise?.includes(noise))
 			noise = modelInfo?.noise ? OpenComicAI.closest(modelInfo.noise, noise) : false;
@@ -1352,6 +1398,7 @@ export default class OpenComicAI {
 			...(memorySafePercentage ? ['-u', memorySafePercentage] : []),
 			...(gpuId ? ['-g', gpuId] : []),
 			...(tta ? ['-x'] : []),
+			...(fp32 ? ['-p'] : []),
 		];
 
 		switch(modelInfo.upscaler)
@@ -1483,7 +1530,8 @@ export default class OpenComicAI {
 
 	private static spawnDaemon = async (binary: string, args: string[], spawn?: Spawn): Promise<void> => {
 
-		const initFlags = ['-m', '-n', '-g', '-z', '-t', '-y', '-u', '-k'];
+		const singleFlags = ['-x', '-p'];
+		const initFlags = ['-m', '-n', '-g', '-z', '-t', '-y', '-u', '-k', '-p'];
 
 		const initArgs: string[] = [];
 		const daemonArgs: string[] = [];
@@ -1491,7 +1539,16 @@ export default class OpenComicAI {
 		for(let i = 0, len = args.length; i < len; i += 2)
 		{
 			const target = initFlags.includes(args[i]) ? initArgs : daemonArgs;
-			target.push(args[i], args[i + 1]);
+
+			if(singleFlags.includes(args[i]))
+			{
+				target.push(args[i]);
+				i--;
+			}
+			else
+			{
+				target.push(args[i], args[i + 1]);
+			}
 		}
 
 		const key: string = [binary, ...initArgs].join(' ');

@@ -71,7 +71,7 @@ async function image(source: string, options: OpenComicAIPanels, downloading?: D
 	if(debug) console.time('OpenComicAI.image');
 		
 	await OpenComicAI.image(sharpDest, panelsDest, options);
-	await fsp.unlink(sharpDest);
+	if(!debug) await fsp.unlink(sharpDest);
 
 	if(debug) console.timeEnd('OpenComicAI.image');
 
@@ -106,7 +106,7 @@ async function image(source: string, options: OpenComicAIPanels, downloading?: D
 		maskBuffer = await green.raw().toBuffer();
 	}
 
-	await fsp.unlink(panelsDest);
+	if(!debug) await fsp.unlink(panelsDest);
 
 	if(debug)
 	{

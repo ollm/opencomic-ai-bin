@@ -93,6 +93,55 @@ Set the directory where models will be downloaded and stored.
 OpenComicAI.setModelsPath(path: string): void
 ```
 
+### OpenComicAI.setCustomModel
+
+Register a custom model so it can be used with `image()` or `pipeline()` like any other model.
+
+```ts
+OpenComicAI.setCustomModel(model: ModelObject): void
+```
+
+The `model` argument follows the [`ModelObject`](#modelobject) interface. The `key`, `name`, `upscaler`, `scales`, and `files` properties are required when registering a custom model.
+
+The model files must already exist locally. Their paths are resolved as follows:
+
+```
+<modelsPath>/<type>/<folder>/<file>
+```
+
+For example, with `type: 'custom'` and `folder: './models'`, place the model files in `<modelsPath>/custom/models/`.
+The `.bin` and `.param` files must use the exact names listed in `files`.
+
+```ts
+const customModel = 'my-custom-model-1x';
+
+// Use a path appropriate for your installation. The selected directory must
+// resolve to the folder containing the platform binary directories.
+OpenComicAI.setDirname('/path/to/opencomic-ai-bin/runtime');
+OpenComicAI.setModelsPath('/path/to/models');
+
+OpenComicAI.setCustomModel({
+	key: customModel,
+	name: 'My Custom Model',
+	type: 'custom',
+	upscaler: 'upscayl',
+	scales: [1],
+	noise: undefined,
+	latency: 1,
+	folder: './models',
+	files: [
+		`${customModel}.bin`,
+		`${customModel}.param`,
+	],
+});
+
+await OpenComicAI.image('./input.png', './output.png', {
+	model: customModel,
+});
+```
+
+`setDirname()` is only needed when the custom model uses a binary outside the package's default runtime location. The `upscayl` binary must be available for the current platform, and the model name passed to `image()` or `pipeline()` must match the `key` used during registration.
+
 ### OpenComicAI.setConcurrentDaemons
 
 Set the maximum number of concurrent daemons (`upscayl` models only), 0 disables daemons.
@@ -124,12 +173,14 @@ OpenComicAI.closeAllDaemons(): void
 Set a sharp instance.
 
 ```ts
-OpenComicAI.keepIccProfile(sharp: any): void
+OpenComicAI.setSharp(sharp: any): void
 ```
 
 ### OpenComicAI.keepIccProfile
 
-Keep the ICC profile from the input image, requires a sharp instance to copy the profile from source to dest.
+Keep the ICC profile from the input image in the output image. This requires a sharp instance configured with `setSharp()`.
+
+The output is converted to the specified pipeline colourspace before the input ICC profile is applied.
 
 ```ts
 OpenComicAI.keepIccProfile(pipelineColourspace: string = 'rgb16'): void
@@ -145,7 +196,7 @@ OpenComicAI.__dirname: string
 
 ### OpenComicAI.models
 
-Object containing all available models organized by type (upscale, descreen, artifact-removal).
+Object containing all available models organized by type (`upscale`, `descreen`, `descreen-mask`, `artifact-removal`, `panels`, and `custom`).
 
 ```ts
 OpenComicAI.models: Record<ModelType, Record<string, ModelObject>>
@@ -199,6 +250,21 @@ Preload the model to daemon (`upscayl` models only) or download the model if not
 OpenComicAI.preload(steps: OpenComicAIOptions[], downloading?: Downloading): Promise<void>
 ```
 
+### OpenComicAI.image
+
+Process an image using a single AI model. If no model is specified, the default model is used.
+
+The destination directory is created automatically when it does not exist.
+
+```ts
+OpenComicAI.image(
+	source: string,
+	dest: string,
+	options?: OpenComicAIOptions,
+	progress?: ((progress: number) => void) | false
+): Promise<string>
+```
+
 ### OpenComicAI.pipeline
 
 Process an image through one or more AI models.
@@ -232,10 +298,29 @@ type Model =
 	| 'opencomic-ai-upscale'
 	...
 ```
+
+### Model aliases
+
+The following aliases identify models for specific processing stages:
+
+```typescript
+type ModelUpscale = keyof typeof OpenComicAI.models.upscale;
+type ModelArtifactRemoval = keyof typeof OpenComicAI.models['artifact-removal'];
+type ModelMask = keyof typeof OpenComicAI.models['descreen-mask'];
+type ModelPanels = keyof typeof OpenComicAI.models.panels;
+type ModelCustom = string;
+```
+
 ### `ModelType`
 
 ```typescript
-type ModelType = 'upscale' | 'descreen' | 'artifact-removal';
+type ModelType =
+	| 'upscale'
+	| 'descreen'
+	| 'descreen-mask'
+	| 'artifact-removal'
+	| 'panels'
+	| 'custom';
 ```
 
 ### `Upscaler`
@@ -257,12 +342,54 @@ interface OpenComicAIOptions {
 	model?: Model;
 	noise?: 0 | 1 | 2 | 3;
 	scale?: number;
-	tileSize?: number;
+	tileSize?: number | 'auto';
+	maxTileSize?: number;
+	memorySafePercentage?: number;
 	gpuId?: string;
 	threads?: number;
 	tta?: boolean;
+	fp32?: boolean;
+	keepBigHalftone?: OpenComicAIKeepBigHalftone;
 }
 ```
+
+### `OpenComicAIKeepBigHalftone`
+
+Options for preserving large halftone components while descreening an image.
+
+```typescript
+interface OpenComicAIKeepBigHalftone {
+	model: ModelMask | 'auto';
+	minSize?: number;
+	minPixels?: number;
+	artifactRemoval?: OpenComicAIArtifactRemoval;
+}
+```
+
+`minSize` is the minimum component size as a percentage of the image height. `minPixels` filters out components smaller than the specified number of pixels. `artifactRemoval` can be used to process the selected regions with an artifact-removal model.
+
+### `OpenComicAIArtifactRemoval`
+
+```typescript
+interface OpenComicAIArtifactRemoval {
+	model: ModelArtifactRemoval | 'auto';
+}
+```
+
+### `OpenComicAIPanels`
+
+Options for panel detection.
+
+```typescript
+interface OpenComicAIPanels {
+	model: ModelPanels | 'auto';
+	minPixels?: number;
+	keepAspectRatio?: boolean;
+	upscale?: OpenComicAIUpscale;
+}
+```
+
+`upscale` can be used to upscale the panel mask before detecting its components.
 
 ### `ModelObject`
 
@@ -272,13 +399,16 @@ interface ModelObject {
 	name: string;
 	upscaler: Upscaler;
 	type?: ModelType;
+	tileSize?: number; // Force tile size for this model, overrides auto tile estimation
+	tileSizeFromMem128?: number; // Model memory usage in MB measured at tile=128 for auto tile estimation
 	scales: number[];
 	noise: number[] | undefined;
-	latency: number; // From 0.5 (Fatest model) to 10 (Slowest model)
+	latency: number; // From 0.5 (Fastest model) to 10 (Slowest model)
 	speed?: Speed;
 	folder: string;
 	path?: string;
 	files: string[];
+	scaleFiles?: Record<number, Model>;
 	supportCurrentPlatform?: boolean;
 }
 ```
