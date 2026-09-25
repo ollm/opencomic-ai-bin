@@ -117,8 +117,73 @@ export interface ModelObject {
 
 let models: Record<ModelType, Record<string, ModelObject>> = {
 	upscale: {
+		'opencomic-ai-upscale-compact-v2': {
+			name: 'OpenComic AI Upscale Fast V2',
+			upscaler: 'upscayl',
+			tileSizeFromMem128: 41,
+			scales: [2, 3, 4],
+			noise: undefined,
+			latency: 0.63,
+			folder: './models',
+			files: [
+				'opencomic-ai-upscale-2x-compact-v2.bin',
+				'opencomic-ai-upscale-2x-compact-v2.param',
+				'opencomic-ai-upscale-3x-compact-v2.bin',
+				'opencomic-ai-upscale-3x-compact-v2.param',
+				'opencomic-ai-upscale-4x-compact-v2.bin',
+				'opencomic-ai-upscale-4x-compact-v2.param',
+			],
+			scaleFiles: {
+				2: 'opencomic-ai-upscale-2x-compact-v2',
+				3: 'opencomic-ai-upscale-3x-compact-v2',
+				4: 'opencomic-ai-upscale-4x-compact-v2',
+			},
+		},
+		'opencomic-ai-upscale-lite-v2': {
+			name: 'OpenComic AI Upscale Balanced V2',
+			upscaler: 'upscayl',
+			tileSizeFromMem128: 282,
+			scales: [2, 3, 4],
+			noise: undefined,
+			latency: 2.59,
+			folder: './models',
+			files: [
+				'opencomic-ai-upscale-2x-lite-v2.bin',
+				'opencomic-ai-upscale-2x-lite-v2.param',
+				'opencomic-ai-upscale-3x-lite-v2.bin',
+				'opencomic-ai-upscale-3x-lite-v2.param',
+				'opencomic-ai-upscale-4x-lite-v2.bin',
+				'opencomic-ai-upscale-4x-lite-v2.param',
+			],
+			scaleFiles: {
+				2: 'opencomic-ai-upscale-2x-lite-v2',
+				3: 'opencomic-ai-upscale-3x-lite-v2',
+				4: 'opencomic-ai-upscale-4x-lite-v2',
+			},
+		},
+		'opencomic-ai-upscale-v2': {
+			name: 'OpenComic AI Upscale Quality',
+			upscaler: 'upscayl',
+			tileSizeFromMem128: 645,
+			scales: [2, 3, 4],
+			noise: undefined,
+			latency: 8.36,
+			folder: './models',
+			files: [
+				'opencomic-ai-upscale-2x-v2.bin',
+				'opencomic-ai-upscale-2x-v2.param',
+				'opencomic-ai-upscale-3x-v2.bin',
+				'opencomic-ai-upscale-3x-v2.param',
+				'opencomic-ai-upscale-4x-v2.bin',
+				'opencomic-ai-upscale-4x-v2.param',
+			],
+			scaleFiles: {
+				2: 'opencomic-ai-upscale-2x-v2',
+				3: 'opencomic-ai-upscale-3x-v2',
+				4: 'opencomic-ai-upscale-4x-v2',
+			},
+		},
 		'opencomic-ai-upscale-compact': {
-			// name: 'OpenComic AI Upscale Compact',
 			name: 'OpenComic AI Upscale Fast',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 41,
@@ -141,7 +206,6 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			},
 		},
 		'opencomic-ai-upscale-lite': {
-			// name: 'OpenComic AI Upscale Lite',
 			name: 'OpenComic AI Upscale Balanced',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 282,
@@ -164,7 +228,6 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			},
 		},
 		'opencomic-ai-upscale': {
-			// name: 'OpenComic AI Upscale',
 			name: 'OpenComic AI Upscale Quality',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 645,
@@ -562,6 +625,45 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		},
 	},
 	descreen: {
+		'opencomic-ai-descreen-hard-compact-v2': {
+			name: 'OpenComic AI Descreen Hard Fast V2',
+			upscaler: 'upscayl',
+			tileSizeFromMem128: 41,
+			scales: [1],
+			noise: undefined,
+			latency: 0.52,
+			folder: './models',
+			files: [
+				'opencomic-ai-descreen-hard-compact-v2.bin',
+				'opencomic-ai-descreen-hard-compact-v2.param',
+			],
+		},
+		'opencomic-ai-descreen-hard-lite-v2': {
+			name: 'OpenComic AI Descreen Hard Balanced V2',
+			upscaler: 'upscayl',
+			tileSizeFromMem128: 105,
+			scales: [1],
+			noise: undefined,
+			latency: 3,
+			folder: './models',
+			files: [
+				'opencomic-ai-descreen-hard-lite-v2.bin',
+				'opencomic-ai-descreen-hard-lite-v2.param',
+			],
+		},
+		'opencomic-ai-descreen-hard-v2': {
+			name: 'OpenComic AI Descreen Hard Quality V2',
+			upscaler: 'upscayl',
+			tileSizeFromMem128: 251,
+			scales: [1],
+			noise: undefined,
+			latency: 8.67,
+			folder: './models',
+			files: [
+				'opencomic-ai-descreen-hard-v2.bin',
+				'opencomic-ai-descreen-hard-v2.param',
+			],
+		},
 		'opencomic-ai-descreen-hard-compact': {
 			// name: 'OpenComic AI Descreen Hard Compact',
 			name: 'OpenComic AI Descreen Hard Fast',
@@ -632,8 +734,46 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		},
 	},
 	'artifact-removal': {
+		'opencomic-ai-artifact-removal-compact-v2': {
+			name: 'OpenComic AI Artifact Removal Fast V2',
+			upscaler: 'upscayl',
+			tileSizeFromMem128: 41,
+			scales: [1],
+			noise: undefined,
+			latency: 0.5,
+			folder: './models',
+			files: [
+				'opencomic-ai-artifact-removal-compact-v2.bin',
+				'opencomic-ai-artifact-removal-compact-v2.param',
+			],
+		},
+		'opencomic-ai-artifact-removal-lite-v2': {
+			name: 'OpenComic AI Artifact Removal Balanced V2',
+			upscaler: 'upscayl',
+			tileSizeFromMem128: 105,
+			scales: [1],
+			noise: undefined,
+			latency: 2.97,
+			folder: './models',
+			files: [
+				'opencomic-ai-artifact-removal-lite-v2.bin',
+				'opencomic-ai-artifact-removal-lite-v2.param',
+			],
+		},
+		'opencomic-ai-artifact-removal-v2': {
+			name: 'OpenComic AI Artifact Removal Quality V2',
+			upscaler: 'upscayl',
+			tileSizeFromMem128: 251,
+			scales: [1],
+			noise: undefined,
+			latency: 8.21,
+			folder: './models',
+			files: [
+				'opencomic-ai-artifact-removal-v2.bin',
+				'opencomic-ai-artifact-removal-v2.param',
+			],
+		},
 		'opencomic-ai-artifact-removal-compact': {
-			// name: 'OpenComic AI Artifact Removal Compact',
 			name: 'OpenComic AI Artifact Removal Fast',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 41,
@@ -647,7 +787,6 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			],
 		},
 		'opencomic-ai-artifact-removal-lite': {
-			// name: 'OpenComic AI Artifact Removal Lite',
 			name: 'OpenComic AI Artifact Removal Balanced',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 105,
@@ -660,9 +799,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 				'opencomic-ai-artifact-removal-lite.param',
 			],
 		},
-
 		'opencomic-ai-artifact-removal': {
-			// name: 'OpenComic AI Artifact Removal',
 			name: 'OpenComic AI Artifact Removal Quality',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 251,
@@ -886,8 +1023,8 @@ interface Daemon {
 	push: (args: string[], spawn: Spawn) => void;
 }
 
-const DEFAULT_MODEL: Model = 'opencomic-ai-upscale-lite';
-const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/75202ff7ba2728b04b756343bea8a42f90288769/models/';
+const DEFAULT_MODEL: Model = 'opencomic-ai-upscale-lite-v2';
+const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/8f4df0829bff1b13613f83ef5e42e3f68ac4101d/models/';
 
 const DAEMON_UPSCALERS: Upscaler[] = ['upscayl'];
 
