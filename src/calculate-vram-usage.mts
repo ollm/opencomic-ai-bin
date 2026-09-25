@@ -1,13 +1,42 @@
-import OpenComicAI, {type OpenComicAIOptions} from './index.mjs';
+import fs from 'node:fs';
 
+import OpenComicAI, {type OpenComicAIOptions} from './index.mjs';
 import {getArg} from './args.mjs';
 
 const forceModel = getArg('--model');
-const tileSize = getArg('--tile-size');
+const tileSize = +(getArg('--tile-size') ?? 128);
+
+const BYTES_PER_MB = 1024 ** 2;
+
+function getCurrentVRAM() {
+
+	return getAMDCurrentVRAM();
+
+}
+
+function getAvgCurrentVRAM() {
+
+	let total = 0;
+
+	for(let i = 0; i < 10; i++)
+	{
+		total += getAMDCurrentVRAM();
+	}
+
+	return total / 10;
+
+}
+
+function getAMDCurrentVRAM() {
+
+	const vramUsed = parseInt(fs.readFileSync('/sys/class/drm/card1/device/mem_info_vram_used', 'utf-8'), 10);
+	return vramUsed / BYTES_PER_MB;
+
+}
 
 (async function(){
 
-	console.log('Calculating latency for available models...');
+	console.log('Calculating vram usage for available models...');
 
 	const images = [
 		'../assets/sample-image-1.jpg',
@@ -43,13 +72,13 @@ const tileSize = getArg('--tile-size');
 
 		const options: OpenComicAIOptions = {
 			model: _model,
+			tileSize: tileSize,
 			scale: scale,
 		};
 
-		if(tileSize)
-			options.tileSize = tileSize;
-
 		let startTime = Date.now();
+
+		const prevVram = getAvgCurrentVRAM();
 
 		if(perloadFirst && OpenComicAI.concurrentDaemons > 0)
 		{
@@ -64,13 +93,15 @@ const tileSize = getArg('--tile-size');
 			console.timeEnd(`Preload model: ${model.name}`);
 		}
 
+		const usageVram: number[] = [];
+
 		for(let i = 0, len = images.length; i < len; i++)
 		{
 			const image = images[i];
 
 			console.time(`Processing image ${i + 1}/${len} for model: ${model.name}`);
 
-			await OpenComicAI.pipeline(image, '../assets/calculate-latency_'+_model+'.jpg', [
+			await OpenComicAI.pipeline(image, '../assets/calculate-vram-usage_'+_model+'.jpg', [
 				options,
 			], (progress) => {
 
@@ -99,13 +130,28 @@ const tileSize = getArg('--tile-size');
 
 			console.timeEnd(`Processing image ${i + 1}/${len} for model: ${model.name}`);
 
+			if(i === 0)
+			{
+				// Sleep for a short duration to allow VRAM to stabilize
+				await new Promise(resolve => setTimeout(resolve, 1000));
+			}
+
+			usageVram.push(getAvgCurrentVRAM() - prevVram);
+
 			if(ignoreFirst && i === 0)
 				startTime = Date.now();
 		}
 
+		OpenComicAI.closeAllDaemons();
+
+		// Sleep for a short duration to allow VRAM to stabilize
+		await new Promise(resolve => setTimeout(resolve, 1000));
+
+		const avgUsageVram = Math.round((usageVram.reduce((a, b) => a + b, 0) / usageVram.length) * 10) / 10;
+
 		const endTime = Date.now();
 		const latency = endTime - startTime;
-		console.log(`Model: ${model.name}, Latency: ${latency} ms`);
+		console.log(`Model: ${model.name}, Latency: ${latency} ms, VRAM usage in tile size ${tileSize}: ${avgUsageVram}MB`);
 		latencies[model.name] = latency;
 		latenciesList.push(latency);
 	}

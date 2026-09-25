@@ -37,6 +37,21 @@ export default [
 		],
 	},
 	{
+		input: 'src/calculate-vram-usage.mts',
+		output: [
+			{
+				file: 'dist/calculate-vram-usage.mjs',
+				format: 'es',
+			},
+		],
+		plugins: [
+			typescript({
+				tsconfig: './tsconfig.json',
+				declaration: false,
+			}),
+		],
+	},
+	{
 		input: 'src/test-yolo.mts',
 		output: [
 			{

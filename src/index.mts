@@ -118,9 +118,10 @@ export interface ModelObject {
 let models: Record<ModelType, Record<string, ModelObject>> = {
 	upscale: {
 		'opencomic-ai-upscale-compact': {
-			name: 'OpenComic AI Upscale Compact',
+			// name: 'OpenComic AI Upscale Compact',
+			name: 'OpenComic AI Upscale Fast',
 			upscaler: 'upscayl',
-// 			tileSize: 128,
+			tileSizeFromMem128: 41,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 0.63,
@@ -140,8 +141,10 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			},
 		},
 		'opencomic-ai-upscale-lite': {
-			name: 'OpenComic AI Upscale Lite',
+			// name: 'OpenComic AI Upscale Lite',
+			name: 'OpenComic AI Upscale Balanced',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 282,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 2.59,
@@ -161,8 +164,10 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			},
 		},
 		'opencomic-ai-upscale': {
-			name: 'OpenComic AI Upscale',
+			// name: 'OpenComic AI Upscale',
+			name: 'OpenComic AI Upscale Quality',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 645,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 8.36,
@@ -234,6 +239,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'realesr-animevideov3': {
 			name: 'RealESR AnimeVideo v3',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 41,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 1.36,
@@ -250,6 +256,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'realesrgan-x4plus': {
 			name: 'RealESRGAN x4 Plus',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 645,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 9.44,
@@ -262,6 +269,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'realesrgan-x4plus-anime': {
 			name: 'RealESRGAN x4 Plus Anime',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 509,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 3.61,
@@ -274,6 +282,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'realesrnet-x4plus': {
 			name: 'RealESRNet x4 Plus',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 645,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 9.35,
@@ -334,6 +343,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'4x-WTP-ColorDS': {
 			name: 'WTP ColorDS',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 645,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 9.53,
@@ -346,6 +356,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'remacri-4x': {
 			name: 'Remacri',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 645,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 9.84,
@@ -358,6 +369,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'ultramix-balanced-4x': {
 			name: 'Ultramix Balanced',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 642,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 10,
@@ -370,6 +382,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'ultrasharp-4x': {
 			name: 'Ultrasharp',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 643,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 9.73,
@@ -394,6 +407,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'4xInt-RemAnime': {
 			name: 'Int-RemAnime',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 645,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 9.46,
@@ -406,6 +420,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'AI-Forever_x4plus': {
 			name: 'AI-Forever x4plus',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 645,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 9.55,
@@ -418,6 +433,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'4xNomosWebPhoto_esrgan': {
 			name: 'Nomos Web Photo ESRGAN',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 645,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 9.77,
@@ -430,6 +446,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'4xHFA2k': {
 			name: 'HFA2k',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 645,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 9.69,
@@ -442,6 +459,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'4xLSDIRCompactC3': {
 			name: 'LSDIR Compact C3',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 41,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 1.31,
@@ -454,6 +472,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'4xLSDIRplusC': {
 			name: 'LSDIR Plus C',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 645,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 9.51,
@@ -466,6 +485,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'4x_NMKD-Siax_200k': {
 			name: 'NMKD Siax',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 645,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 9.67,
@@ -478,6 +498,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'4xNomos8kSC': {
 			name: 'Nomos 8k SC',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 645,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 9.58,
@@ -490,6 +511,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'RealESRGAN_General_WDN_x4_v3': {
 			name: 'RealESRGAN General WDN v3',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 49,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 1.6,
@@ -502,6 +524,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'RealESRGAN_General_x4_v3': {
 			name: 'RealESRGAN General v3',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 49,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 1.35,
@@ -514,6 +537,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'uniscale_restore_x4': {
 			name: 'Uniscale Restore x4',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 645,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 9.51,
@@ -526,6 +550,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'unknown-2.0.1': {
 			name: 'Unknown 2.0.1',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 645,
 			scales: [2, 3, 4],
 			noise: undefined,
 			latency: 9.87,
@@ -538,8 +563,10 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 	},
 	descreen: {
 		'opencomic-ai-descreen-hard-compact': {
-			name: 'OpenComic AI Descreen Hard Compact',
+			// name: 'OpenComic AI Descreen Hard Compact',
+			name: 'OpenComic AI Descreen Hard Fast',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 41,
 			scales: [1],
 			noise: undefined,
 			latency: 0.52,
@@ -550,9 +577,10 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			],
 		},
 		'opencomic-ai-descreen-hard-lite': {
-			name: 'OpenComic AI Descreen Hard Lite',
+			// name: 'OpenComic AI Descreen Hard Lite',
+			name: 'OpenComic AI Descreen Hard Balanced',
 			upscaler: 'upscayl',
-			tileSizeFromMem128: 32, // TODO: Test only for now, need calculate tile size from memory usage for all models
+			tileSizeFromMem128: 105,
 			scales: [1],
 			noise: undefined,
 			latency: 3,
@@ -563,8 +591,10 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			],
 		},
 		'opencomic-ai-descreen-hard': {
-			name: 'OpenComic AI Descreen Hard',
+			// name: 'OpenComic AI Descreen Hard',
+			name: 'OpenComic AI Descreen Hard Quality',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 251,
 			scales: [1],
 			noise: undefined,
 			latency: 8.67,
@@ -577,6 +607,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'1x_halftone_patch_060000_G': {
 			name: 'Halftone Patch 060000 G',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 251,
 			scales: [1],
 			noise: undefined,
 			latency: 8.26,
@@ -589,6 +620,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'1x_wtp_descreenton_compact': {
 			name: 'WTP DescreenTon Compact',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 41,
 			scales: [1],
 			noise: undefined,
 			latency: 0.51,
@@ -601,8 +633,10 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 	},
 	'artifact-removal': {
 		'opencomic-ai-artifact-removal-compact': {
-			name: 'OpenComic AI Artifact Removal Compact',
+			// name: 'OpenComic AI Artifact Removal Compact',
+			name: 'OpenComic AI Artifact Removal Fast',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 41,
 			scales: [1],
 			noise: undefined,
 			latency: 0.5,
@@ -613,8 +647,10 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			],
 		},
 		'opencomic-ai-artifact-removal-lite': {
-			name: 'OpenComic AI Artifact Removal Lite',
+			// name: 'OpenComic AI Artifact Removal Lite',
+			name: 'OpenComic AI Artifact Removal Balanced',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 105,
 			scales: [1],
 			noise: undefined,
 			latency: 2.97,
@@ -626,8 +662,10 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		},
 
 		'opencomic-ai-artifact-removal': {
-			name: 'OpenComic AI Artifact Removal',
+			// name: 'OpenComic AI Artifact Removal',
+			name: 'OpenComic AI Artifact Removal Quality',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 251,
 			scales: [1],
 			noise: undefined,
 			latency: 8.21,
@@ -640,6 +678,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'1x_NMKD-Jaywreck3-Lite_320k': {
 			name: 'NMKD Jaywreck3 Lite',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 105,
 			scales: [1],
 			noise: undefined,
 			latency: 2.98,
@@ -652,6 +691,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'1x_NMKD-Jaywreck3-Soft-Lite_320k': {
 			name: 'NMKD Jaywreck3 Soft Lite',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 105,
 			scales: [1],
 			noise: undefined,
 			latency: 2.98,
@@ -664,6 +704,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'1x-SaiyaJin-DeJpeg': {
 			name: 'SaiyaJin DeJpeg',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 251,
 			scales: [1],
 			noise: undefined,
 			latency: 8.2,
@@ -676,6 +717,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'1x_JPEGDestroyerV2_96000G': {
 			name: 'JPEG Destroyer V2',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 251,
 			scales: [1],
 			noise: undefined,
 			latency: 8.22,
@@ -690,6 +732,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		'opencomic-ai-descreen-mask-fast-v3-test-500000': { // TODO: Test model
 			name: 'OpenComic AI Descreen Mask Fast v3 Test Model 500000',
 			upscaler: 'upscayl',
+			tileSizeFromMem128: 41,
 			scales: [1],
 			noise: undefined,
 			latency: 0,
