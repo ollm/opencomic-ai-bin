@@ -1037,7 +1037,7 @@ interface Daemon {
 }
 
 const DEFAULT_MODEL: Model = 'opencomic-ai-upscale-lite-v2';
-const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/8f4df0829bff1b13613f83ef5e42e3f68ac4101d/models/';
+const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/7a7b7aa428474351e8f62051c0310232b7a5e9a3/models/';
 
 const DAEMON_UPSCALERS: Upscaler[] = ['upscayl'];
 
