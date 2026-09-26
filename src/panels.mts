@@ -49,10 +49,13 @@ async function image(source: string, options: OpenComicAIPanels, downloading?: D
 	let {width, height} = info;
 
 	// TODO: Adjust levels to enhance contrast for better detection, temporarily??
+	// TODO: Custom arch models fix this
+	/*
 	for(let i = 0, len = adjustedLevelsImage.length; i < len; i++)
 	{
 		adjustedLevelsImage[i] = Math.min(255, Math.max(0, Math.round(adjustedLevelsImage[i] * 1.5)));
 	}
+	*/
 
 	await OpenComicAI.sharp(adjustedLevelsImage, {
 		raw: {

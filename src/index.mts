@@ -894,6 +894,19 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 				'opencomic-ai-panels-fast-512-channels-inverted-259780.param',
 			],
 		},
+		'opencomic-ai-panels-fast-big-1024-channels-inverted-custom-arch-v2.1-20000': { // TODO: Test model
+			name: 'OpenComic AI Panels Fast Big 1024 Channels Inverted Custom Arch v2.1',
+			upscaler: 'upscayl',
+			tileSize: 1024,
+			scales: [1],
+			noise: undefined,
+			latency: 0,
+			folder: './models',
+			files: [
+				'opencomic-ai-panels-fast-big-1024-channels-inverted-custom-arch-v2.1-20000.bin',
+				'opencomic-ai-panels-fast-big-1024-channels-inverted-custom-arch-v2.1-20000.param',
+			],
+		},
 	},
 	custom: {
 	}
