@@ -580,13 +580,26 @@ If you use this project, please cite it as follows.
     author = {Llopart Mora, Oleguer},
     title = {{OpenComic AI}},
     year = {2026},
-    version = {1.0.1},
-    doi = {10.5281/zenodo.20802371},
-    url = {https://doi.org/10.5281/zenodo.20802371}
+    version = {2.0},
+    doi = {10.5281/zenodo.20802370},
+    url = {https://doi.org/10.5281/zenodo.20802370}
 }
 ```
 
 Release models citation. To see the differences between versions, you can check the [`CHANGELOG.md`](https://github.com/ollm/opencomic-ai-training/blob/master/CHANGELOG.md) file.
+
+#### OpenComic AI v2.0
+
+``` bibtex
+@software{opencomic_ai_models_v2_0,
+    author = {Llopart Mora, Oleguer},
+    title = {{OpenComic AI v2.0 Models}},
+    year = {2026},
+    version = {2.0},
+    doi = {10.5281/zenodo.22967095},
+    url = {https://doi.org/10.5281/zenodo.22967095}
+}
+```
 
 #### OpenComic AI v1.0
 
@@ -600,21 +613,6 @@ Release models citation. To see the differences between versions, you can check 
     url = {https://doi.org/10.5281/zenodo.20802371}
 }
 ```
-
-<!--
-#### OpenComic AI v2.0 (Still training)
-
-``` bibtex
-@software{opencomic_ai_models_v2_0,
-    author = {Llopart Mora, Oleguer},
-    title = {{OpenComic AI v2.0 Models}},
-    year = {2026},
-    version = {2.0},
-    doi = {10.5281/zenodo.20802371},
-    url = {https://github.com/ollm/opencomic-ai-training/releases/tag/v2.0}
-}
-```
--->
 
 ## License
 
