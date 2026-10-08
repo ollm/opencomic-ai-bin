@@ -46,10 +46,10 @@ import sharp from 'sharp'; // This is optional, only needed if you want to keep 
 
 	await OpenComicAI.pipeline('./input.jpg', './output.jpg', [
 		{
-			model: 'opencomic-ai-descreen-hard-lite',
+			model: 'opencomic-ai-descreen-hard-fast-v3',
 		},
 		{
-			model: 'opencomic-ai-upscale-lite',
+			model: 'opencomic-ai-upscale-fast-v3',
 			scale: 4,
 		}
 	], (progress) => {
@@ -293,9 +293,8 @@ OpenComicAI.closest(array: number[], target: number): number
 
 ```typescript
 type Model =
-	| 'opencomic-ai-upscale-compact'
-	| 'opencomic-ai-upscale-lite'
-	| 'opencomic-ai-upscale'
+	| 'opencomic-ai-upscale-fast-v3'
+	| 'opencomic-ai-upscale-balanced-v3'
 	...
 ```
 
@@ -429,9 +428,14 @@ interface Downloading {
 
 Model | Name | Upscaler | Source
 ------|------|----------|-------
-`opencomic-ai-artifact-removal-compact` | OpenComic AI Artifact Removal Compact | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
-`opencomic-ai-artifact-removal-lite` | OpenComic AI Artifact Removal Lite | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
-`opencomic-ai-artifact-removal` | OpenComic AI Artifact Removal | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-artifact-removal-fast-v3` | OpenComic AI Artifact Removal Fast v3 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-artifact-removal-balanced-v3` | OpenComic AI Artifact Removal Balanced v3 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-artifact-removal-compact-v2` | OpenComic AI Artifact Removal Fast v2 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-artifact-removal-lite-v2` | OpenComic AI Artifact Removal Balanced v2 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-artifact-removal-v2` | OpenComic AI Artifact Removal Quality v2 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-artifact-removal-compact` | OpenComic AI Artifact Removal Fast | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-artifact-removal-lite` | OpenComic AI Artifact Removal Balanced | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-artifact-removal` | OpenComic AI Artifact Removal Quality | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
 `1x_NMKD-Jaywreck3-Lite_320k` | NMKD Jaywreck3 Lite | `upscayl` | [NMKD.de](https://nmkd.de/?esrgan)
 `1x_NMKD-Jaywreck3-Soft-Lite_320k` | NMKD Jaywreck3 Soft Lite | `upscayl` | [NMKD.de](https://nmkd.de/?esrgan)
 `1x-SaiyaJin-DeJpeg` | SaiyaJin DeJpeg | `upscayl` | [OpenModelDB](https://openmodeldb.info/models/1x-SaiyaJin-DeJpeg)
@@ -441,9 +445,14 @@ Model | Name | Upscaler | Source
 
 Model | Name | Upscaler | Source
 ------|------|----------|-------
-`opencomic-ai-descreen-hard-compact` | OpenComic AI Descreen Hard Compact | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
-`opencomic-ai-descreen-hard-lite` | OpenComic AI Descreen Hard Lite | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
-`opencomic-ai-descreen-hard` | OpenComic AI Descreen Hard | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-descreen-hard-fast-v3` | OpenComic AI Descreen Hard Fast v3 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-descreen-hard-balanced-v3` | OpenComic AI Descreen Hard Balanced v3 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-descreen-hard-compact-v2` | OpenComic AI Descreen Hard Fast v2 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-descreen-hard-lite-v2` | OpenComic AI Descreen Hard Balanced v2 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-descreen-hard-v2` | OpenComic AI Descreen Hard Quality v2 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-descreen-hard-compact` | OpenComic AI Descreen Hard Fast | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-descreen-hard-lite` | OpenComic AI Descreen Hard Balanced | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-descreen-hard` | OpenComic AI Descreen Hard Quality | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
 `1x_halftone_patch_060000_G` | Halftone Patch 060000 G | `upscayl` | [NMKD.de](https://nmkd.de/shared/?dir=ESRGAN/Models/Compression/Halftone)
 `1x_wtp_descreenton_compact` | WTP DescreenTon Compact | `upscayl` | [OpenModelDB](https://openmodeldb.info/models/1x-wtp-descreentone-compact)
 
@@ -451,8 +460,14 @@ Model | Name | Upscaler | Source
 
 Model | Name | Upscaler | Source
 ------|------|----------|-------
-`opencomic-ai-upscale-compact` | OpenComic AI Upscale Compact | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
-`opencomic-ai-upscale-lite` | OpenComic AI Upscale Lite | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-upscale-fast-v3` | OpenComic AI Upscale Fast v3 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-upscale-balanced-v3` | OpenComic AI Upscale Balanced v3 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-upscale-compact-v2` | OpenComic AI Upscale Fast v2 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-upscale-lite-v2` | OpenComic AI Upscale Balanced v2 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-upscale-v2` | OpenComic AI Upscale Quality v2 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-upscale-compact` | OpenComic AI Upscale Fast | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-upscale-lite` | OpenComic AI Upscale Balanced | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-upscale` | OpenComic AI Upscale Quality | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
 `realcugan` | RealCUGAN | `realcugan` | [Moebytes/waifu2x](https://github.com/Moebytes/waifu2x/tree/eaadd13cf54ba3bcb3cbd3e4a1cb2cd922420c9b/real-cugan/models-se)
 `realesr-animevideov3` | RealESR AnimeVideo v3 | `upscayl` | [xinntao/Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)
 `realesrgan-x4plus` | RealESRGAN x4 Plus | `upscayl` | [xinntao/Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)
