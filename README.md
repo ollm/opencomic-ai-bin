@@ -428,8 +428,8 @@ interface Downloading {
 
 Model | Name | Upscaler | Source
 ------|------|----------|-------
-`opencomic-ai-artifact-removal-fast-v3` | OpenComic AI Artifact Removal Fast v3 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
-`opencomic-ai-artifact-removal-balanced-v3` | OpenComic AI Artifact Removal Balanced v3 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-artifact-removal-balanced-v3-ps` | OpenComic AI Artifact Removal Balanced v3 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-artifact-removal-quality-v3-ps` | OpenComic AI Artifact Removal Quality v3 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
 `opencomic-ai-artifact-removal-compact-v2` | OpenComic AI Artifact Removal Fast v2 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
 `opencomic-ai-artifact-removal-lite-v2` | OpenComic AI Artifact Removal Balanced v2 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
 `opencomic-ai-artifact-removal-v2` | OpenComic AI Artifact Removal Quality v2 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
@@ -445,8 +445,8 @@ Model | Name | Upscaler | Source
 
 Model | Name | Upscaler | Source
 ------|------|----------|-------
-`opencomic-ai-descreen-hard-fast-v3` | OpenComic AI Descreen Hard Fast v3 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
-`opencomic-ai-descreen-hard-balanced-v3` | OpenComic AI Descreen Hard Balanced v3 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-descreen-hard-fast-v3-256` | OpenComic AI Descreen Hard Fast v3 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
+`opencomic-ai-descreen-hard-balanced-v3-256` | OpenComic AI Descreen Hard Balanced v3 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
 `opencomic-ai-descreen-hard-compact-v2` | OpenComic AI Descreen Hard Fast v2 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
 `opencomic-ai-descreen-hard-lite-v2` | OpenComic AI Descreen Hard Balanced v2 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
 `opencomic-ai-descreen-hard-v2` | OpenComic AI Descreen Hard Quality v2 | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
