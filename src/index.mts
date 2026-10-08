@@ -117,8 +117,52 @@ export interface ModelObject {
 
 let models: Record<ModelType, Record<string, ModelObject>> = {
 	upscale: {
+		'opencomic-ai-upscale-fast-v3': {
+			name: 'OpenComic AI Upscale Fast v3',
+			upscaler: 'upscayl',
+			tileSizeFromMem128: 41,
+			scales: [2, 3, 4],
+			noise: undefined,
+			latency: 0.63,
+			folder: './models',
+			files: [
+				'opencomic-ai-upscale-2x-fast-v3.bin',
+				'opencomic-ai-upscale-2x-fast-v3.param',
+				'opencomic-ai-upscale-3x-fast-v3.bin',
+				'opencomic-ai-upscale-3x-fast-v3.param',
+				'opencomic-ai-upscale-4x-fast-v3.bin',
+				'opencomic-ai-upscale-4x-fast-v3.param',
+			],
+			scaleFiles: {
+				2: 'opencomic-ai-upscale-2x-fast-v3',
+				3: 'opencomic-ai-upscale-3x-fast-v3',
+				4: 'opencomic-ai-upscale-4x-fast-v3',
+			},
+		},
+		'opencomic-ai-upscale-balanced-v3': {
+			name: 'OpenComic AI Upscale Balanced v3',
+			upscaler: 'upscayl',
+			tileSizeFromMem128: 149,
+			scales: [2, 3, 4],
+			noise: undefined,
+			latency: 2.59,
+			folder: './models',
+			files: [
+				'opencomic-ai-upscale-2x-balanced-v3.bin',
+				'opencomic-ai-upscale-2x-balanced-v3.param',
+				'opencomic-ai-upscale-3x-balanced-v3.bin',
+				'opencomic-ai-upscale-3x-balanced-v3.param',
+				'opencomic-ai-upscale-4x-balanced-v3.bin',
+				'opencomic-ai-upscale-4x-balanced-v3.param',
+			],
+			scaleFiles: {
+				2: 'opencomic-ai-upscale-2x-balanced-v3',
+				3: 'opencomic-ai-upscale-3x-balanced-v3',
+				4: 'opencomic-ai-upscale-4x-balanced-v3',
+			},
+		},
 		'opencomic-ai-upscale-compact-v2': {
-			name: 'OpenComic AI Upscale Fast V2',
+			name: 'OpenComic AI Upscale Fast v2',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 41,
 			scales: [2, 3, 4],
@@ -140,7 +184,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			},
 		},
 		'opencomic-ai-upscale-lite-v2': {
-			name: 'OpenComic AI Upscale Balanced V2',
+			name: 'OpenComic AI Upscale Balanced v2',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 282,
 			scales: [2, 3, 4],
@@ -162,7 +206,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			},
 		},
 		'opencomic-ai-upscale-v2': {
-			name: 'OpenComic AI Upscale Quality',
+			name: 'OpenComic AI Upscale Quality v2',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 645,
 			scales: [2, 3, 4],
@@ -625,8 +669,34 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		},
 	},
 	descreen: {
+		'opencomic-ai-descreen-hard-fast-v3-256': {
+			name: 'OpenComic AI Descreen Hard Fast v3',
+			upscaler: 'upscayl',
+			tileSizeFromMem128: 41,
+			scales: [1],
+			noise: undefined,
+			latency: 0.52,
+			folder: './models',
+			files: [
+				'opencomic-ai-descreen-hard-fast-v3-256.bin',
+				'opencomic-ai-descreen-hard-fast-v3-256.param',
+			],
+		},
+		'opencomic-ai-descreen-hard-balanced-v3-256': {
+			name: 'OpenComic AI Descreen Hard Balanced v3',
+			upscaler: 'upscayl',
+			tileSizeFromMem128: 149,
+			scales: [1],
+			noise: undefined,
+			latency: 3,
+			folder: './models',
+			files: [
+				'opencomic-ai-descreen-hard-balanced-v3-256.bin',
+				'opencomic-ai-descreen-hard-balanced-v3-256.param',
+			],
+		},
 		'opencomic-ai-descreen-hard-compact-v2': {
-			name: 'OpenComic AI Descreen Hard Fast V2',
+			name: 'OpenComic AI Descreen Hard Fast v2',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 41,
 			scales: [1],
@@ -639,7 +709,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			],
 		},
 		'opencomic-ai-descreen-hard-lite-v2': {
-			name: 'OpenComic AI Descreen Hard Balanced V2',
+			name: 'OpenComic AI Descreen Hard Balanced v2',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 105,
 			scales: [1],
@@ -652,7 +722,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			],
 		},
 		'opencomic-ai-descreen-hard-v2': {
-			name: 'OpenComic AI Descreen Hard Quality V2',
+			name: 'OpenComic AI Descreen Hard Quality v2',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 251,
 			scales: [1],
@@ -734,8 +804,34 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		},
 	},
 	'artifact-removal': {
+		'opencomic-ai-artifact-removal-balanced-v3-ps': {
+			name: 'OpenComic AI Artifact Removal Balanced v3',
+			upscaler: 'upscayl',
+			tileSizeFromMem128: 66,
+			scales: [1],
+			noise: undefined,
+			latency: 0.5,
+			folder: './models',
+			files: [
+				'opencomic-ai-artifact-removal-balanced-v3-ps.bin',
+				'opencomic-ai-artifact-removal-balanced-v3-ps.param',
+			],
+		},
+		'opencomic-ai-artifact-removal-quality-v3-ps': {
+			name: 'OpenComic AI Artifact Removal Quality v3',
+			upscaler: 'upscayl',
+			tileSizeFromMem128: 419,
+			scales: [1],
+			noise: undefined,
+			latency: 2.97,
+			folder: './models',
+			files: [
+				'opencomic-ai-artifact-removal-quality-v3-ps.bin',
+				'opencomic-ai-artifact-removal-quality-v3-ps.param',
+			],
+		},
 		'opencomic-ai-artifact-removal-compact-v2': {
-			name: 'OpenComic AI Artifact Removal Fast V2',
+			name: 'OpenComic AI Artifact Removal Fast v2',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 41,
 			scales: [1],
@@ -748,7 +844,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			],
 		},
 		'opencomic-ai-artifact-removal-lite-v2': {
-			name: 'OpenComic AI Artifact Removal Balanced V2',
+			name: 'OpenComic AI Artifact Removal Balanced v2',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 105,
 			scales: [1],
@@ -761,7 +857,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			],
 		},
 		'opencomic-ai-artifact-removal-v2': {
-			name: 'OpenComic AI Artifact Removal Quality V2',
+			name: 'OpenComic AI Artifact Removal Quality v2',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 251,
 			scales: [1],
@@ -866,8 +962,8 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		},
 	},
 	'descreen-mask': {
-		'opencomic-ai-descreen-mask-fast-v3-test-500000': { // TODO: Test model
-			name: 'OpenComic AI Descreen Mask Fast v3 Test Model 500000',
+		'opencomic-ai-descreen-mask-fast-v3-256': {
+			name: 'OpenComic AI Descreen Mask Fast v3',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 41,
 			scales: [1],
@@ -875,8 +971,8 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			latency: 0,
 			folder: './models',
 			files: [
-				'opencomic-ai-descreen-mask-fast-v3-test-500000.bin',
-				'opencomic-ai-descreen-mask-fast-v3-test-500000.param',
+				'opencomic-ai-descreen-mask-fast-v3-256.bin',
+				'opencomic-ai-descreen-mask-fast-v3-256.param',
 			],
 		},
 	},
@@ -1036,8 +1132,8 @@ interface Daemon {
 	push: (args: string[], spawn: Spawn) => void;
 }
 
-const DEFAULT_MODEL: Model = 'opencomic-ai-upscale-lite-v2';
-const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/7a7b7aa428474351e8f62051c0310232b7a5e9a3/models/';
+const DEFAULT_MODEL: Model = 'opencomic-ai-upscale-fast-v3';
+const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/e32481d5c272441908b087cf0a3a3ad9375c6475/models/';
 
 const DAEMON_UPSCALERS: Upscaler[] = ['upscayl'];
 

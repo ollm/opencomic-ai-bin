@@ -3,6 +3,7 @@ import OpenComicAI, {type OpenComicAIOptions} from './index.mjs';
 import {getArg} from './args.mjs';
 
 const forceModel = getArg('--model');
+const onlyOpenComic = getArg('--only-opencomic');
 const tileSize = getArg('--tile-size');
 
 (async function(){
@@ -37,6 +38,9 @@ const tileSize = getArg('--tile-size');
 
 	for(const _model of modelsList)
 	{
+		if(onlyOpenComic && !_model.startsWith('opencomic-'))
+			continue;
+
 		const model = OpenComicAI.model(_model);
 		let scale = model.scales[model.scales.length - 1] ?? 4;
 		if(scale > 4) scale = 4;

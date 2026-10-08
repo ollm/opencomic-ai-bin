@@ -11,6 +11,11 @@ function getArg(arg: string): string | null
 	return value;
 }
 
+function ifArg(arg: string): boolean
+{
+	return process.argv.includes(arg);
+}
+
 function resolve(path: string): string
 {
 	if(!p.isAbsolute(path))
@@ -24,7 +29,9 @@ function resolve(path: string): string
 	return p.normalize(path);
 }
 
+
 export {
     getArg,
+	ifArg,
     resolve
 };

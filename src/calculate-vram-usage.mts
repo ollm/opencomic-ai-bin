@@ -1,10 +1,13 @@
 import fs from 'node:fs';
 
 import OpenComicAI, {type OpenComicAIOptions} from './index.mjs';
-import {getArg} from './args.mjs';
+import {getArg, ifArg} from './args.mjs';
 
 const forceModel = getArg('--model');
+const onlyOpenComic = getArg('--only-opencomic');
 const tileSize = +(getArg('--tile-size') ?? 128);
+
+const printVramLine = ifArg('--print-vram-line');
 
 const BYTES_PER_MB = 1024 ** 2;
 
@@ -66,6 +69,9 @@ function getAMDCurrentVRAM() {
 
 	for(const _model of modelsList)
 	{
+		if(onlyOpenComic && !_model.startsWith('opencomic-'))
+			continue;
+
 		const model = OpenComicAI.model(_model);
 		let scale = model.scales[model.scales.length - 1] ?? 4;
 		if(scale > 4) scale = 4;
@@ -136,7 +142,12 @@ function getAMDCurrentVRAM() {
 				await new Promise(resolve => setTimeout(resolve, 1000));
 			}
 
-			usageVram.push(getAvgCurrentVRAM() - prevVram);
+			const currentVram = getAvgCurrentVRAM();
+
+			if(printVramLine)
+				console.log(`Current VRAM: ${currentVram} MB, Usage VRAM: ${currentVram - prevVram} MB`);
+
+			usageVram.push(currentVram - prevVram);
 
 			if(ignoreFirst && i === 0)
 				startTime = Date.now();

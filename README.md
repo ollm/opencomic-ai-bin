@@ -588,6 +588,19 @@ If you use this project, please cite it as follows.
 
 Release models citation. To see the differences between versions, you can check the [`CHANGELOG.md`](https://github.com/ollm/opencomic-ai-training/blob/master/CHANGELOG.md) file.
 
+#### OpenComic AI v3.0
+
+``` bibtex
+@software{opencomic_ai_models_v3_0,
+    author = {Llopart Mora, Oleguer},
+    title = {{OpenComic AI v3.0 Models}},
+    year = {2026},
+    version = {3.0},
+    doi = {10.5281/zenodo.23245460},
+    url = {https://doi.org/10.5281/zenodo.23245460}
+}
+```
+
 #### OpenComic AI v2.0
 
 ``` bibtex
