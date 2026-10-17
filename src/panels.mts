@@ -24,18 +24,20 @@ async function image(source: string, options: OpenComicAIPanels, downloading?: D
 
 	await OpenComicAI.getModels(steps, downloading);
 
-	let minPixels = options.minPixels ?? 50;
-
 
 	if(debug) console.time('Resize sharp');
 	const dest = p.join(tempDir, 'example.png');
 
 	const sharpDest = OpenComicAI.intermediateDest(dest);
-	const panelsDest = OpenComicAI.intermediateDest(dest);
+	let panelsDest = OpenComicAI.intermediateDest(dest);
 
 	const modelInfo = OpenComicAI.model(options.model);
 
 	let size = modelInfo.tileSize || 512;
+	
+	// In base 512, cuadratic adjustment for minPixels
+	let minPixels = options.minPixels ?? 50;
+	minPixels = Math.round(minPixels * (size / 512) * (size / 512));
 
 	const originalImage = await OpenComicAI.sharp(source);
 	const {width: originalWidth, height: originalHeight} = await originalImage.metadata();
@@ -43,19 +45,40 @@ async function image(source: string, options: OpenComicAIPanels, downloading?: D
 	const {data: adjustedLevelsImage, info} = await originalImage.resize({
 		width: size,
 		height: size,
-		fit: options.keepAspectRatio !== false ? 'inside' : 'fill', // 'fill', // Use 'inside' to maintain aspect ratio, 'fill' to stretch to size and have a little more accurate detection, but needs to be converted to original aspect ratio later
+		// fit: options.keepAspectRatio !== false ? 'inside' : 'fill', // 'fill', // Use 'inside' to maintain aspect ratio, 'fill' to stretch to size and have a little more accurate detection, but needs to be converted to original aspect ratio later
+		fit: 'fill',
 	}).grayscale().raw().toBuffer({resolveWithObject: true});
 
 	let {width, height} = info;
 
+	const imageLevels = options.imageLevels ?? {dark: 0, light: 0, smoothness: 0};
+
 	// TODO: Adjust levels to enhance contrast for better detection, temporarily??
-	// TODO: Custom arch models fix this
-	/*
-	for(let i = 0, len = adjustedLevelsImage.length; i < len; i++)
+	// TODO: Custom arch models in principle fix this
+	const {dark, light, smoothness} = imageLevels;
+
+	if(dark > 0 || light > 0 || smoothness > 0)
 	{
-		adjustedLevelsImage[i] = Math.min(255, Math.max(0, Math.round(adjustedLevelsImage[i] * 1.5)));
+		const min = dark / 255;
+		const max = 1 - light / 255;
+		const steepness = Math.max(0.01, smoothness);
+
+		const sigmoid = (value: number) => 1 / (1 + Math.exp(-steepness * (value - 0.5)));
+
+		const sigmoidMin = sigmoid(0);
+		const sigmoidMax = sigmoid(1);
+
+		for(let i = 0, len = adjustedLevelsImage.length; i < len; i++)
+		{
+			const value = adjustedLevelsImage[i] / 255;
+			const normalized = Math.max(0, Math.min(1, (value - min) / (max - min)));
+
+			adjustedLevelsImage[i] = Math.round(
+				(sigmoid(normalized) - sigmoidMin) /
+				(sigmoidMax - sigmoidMin) * 255
+			);
+		}
 	}
-	*/
 
 	await OpenComicAI.sharp(adjustedLevelsImage, {
 		raw: {
@@ -77,6 +100,29 @@ async function image(source: string, options: OpenComicAIPanels, downloading?: D
 	if(!debug) await fsp.unlink(sharpDest);
 
 	if(debug) console.timeEnd('OpenComicAI.image');
+
+	if(options.keepAspectRatio !== false)
+	{
+		const keepDest = OpenComicAI.intermediateDest(dest);
+
+		const {width: panelsWidth, height: panelsHeight} = await OpenComicAI.sharp(panelsDest).metadata();
+		const aspectRatio = originalWidth / originalHeight;
+		
+		const resizeWidth = Math.min(panelsWidth, Math.round(panelsHeight * aspectRatio));
+		const resizeHeight = Math.min(panelsHeight, Math.round(panelsWidth / aspectRatio));
+
+		await OpenComicAI.sharp(panelsDest).resize({
+			width: resizeWidth,
+			height: resizeHeight,
+			fit: 'fill',
+		}).toFile(keepDest);
+
+		width = resizeWidth;
+		height = resizeHeight;
+
+		if(!debug) await fsp.unlink(panelsDest);
+		panelsDest = keepDest;
+	}
 
 	const green = await OpenComicAI.sharp(panelsDest).extractChannel('green');
 

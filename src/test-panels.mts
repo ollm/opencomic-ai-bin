@@ -48,9 +48,14 @@ if(!model || !image)
 
 	const options = {
 		model,
+		/*imageLevels: {
+			dark: 20,
+			light: 20,
+			smoothness: 1,
+		},*/
 		/*upscale: {
 			model: 'opencomic-ai-upscale-compact', // TODO: Train a model specifically for this?
-			scale: 4,
+			scale: 2,
 		},*/
 	};
 

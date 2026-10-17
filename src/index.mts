@@ -1003,6 +1003,33 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 				'opencomic-ai-panels-fast-big-1024-channels-inverted-custom-arch-v2.1-20000.param',
 			],
 		},
+
+		'opencomic-ai-panels-fast-big-1024-channels-inverted-custom-arch-v2.1-pass2-6000': { // TODO: Test model
+			name: 'OpenComic AI Panels Fast Big 1024 Channels Inverted Custom Arch v2.1 Pass 2',
+			upscaler: 'upscayl',
+			tileSize: 1024,
+			scales: [1],
+			noise: undefined,
+			latency: 0,
+			folder: './models',
+			files: [
+				'opencomic-ai-panels-fast-big-1024-channels-inverted-custom-arch-v2.1-pass2-6000.bin',
+				'opencomic-ai-panels-fast-big-1024-channels-inverted-custom-arch-v2.1-pass2-6000.param',
+			],
+		},
+		'opencomic-ai-panels-fast-big-1024-channels-inverted-custom-arch-v2.1-pass3-6000': { // TODO: Test model
+			name: 'OpenComic AI Panels Fast Big 1024 Channels Inverted Custom Arch v2.1',
+			upscaler: 'upscayl',
+			tileSize: 1024,
+			scales: [1],
+			noise: undefined,
+			latency: 0,
+			folder: './models',
+			files: [
+				'opencomic-ai-panels-fast-big-1024-channels-inverted-custom-arch-v2.1-pass3-6000.bin',
+				'opencomic-ai-panels-fast-big-1024-channels-inverted-custom-arch-v2.1-pass3-6000.param',
+			],
+		},
 	},
 	custom: {
 	}
@@ -1098,10 +1125,17 @@ export interface OpenComicAIArtifactRemoval extends Omit<OpenComicAIOptions, 'ke
 	model: ModelArtifactRemoval | 'auto';
 }
 
+export interface ImageLevelsOptions {
+	dark: number;
+	light: number;
+	smoothness: number;
+}
+
 export interface OpenComicAIPanels extends Omit<OpenComicAIOptions, 'keepBigHalftone'> {
 	model: ModelPanels | 'auto';
 	minPixels?: number;
 	keepAspectRatio?: boolean;
+	imageLevels?: ImageLevelsOptions;
 	upscale?: OpenComicAIUpscale; // TODO: Train a model specifically for this?
 }
 
