@@ -977,6 +977,19 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		},
 	},
 	panels: {
+		'opencomic-ai-panels-fast-1024-channels-inverted-v4': {
+			name: 'OpenComic AI Panels Fast 1024 Channels Inverted v4',
+			upscaler: 'upscayl',
+			tileSize: 1024,
+			scales: [1],
+			noise: undefined,
+			latency: 0,
+			folder: './models',
+			files: [
+				'opencomic-ai-panels-fast-1024-channels-inverted-v4.bin',
+				'opencomic-ai-panels-fast-1024-channels-inverted-v4.param',
+			],
+		},
 		'opencomic-ai-panels-fast-512-channels-inverted-259780': { // TODO: Test model
 			name: 'OpenComic AI Panels Fast 512 Channels Inverted 259780',
 			upscaler: 'upscayl',
@@ -1167,7 +1180,7 @@ interface Daemon {
 }
 
 const DEFAULT_MODEL: Model = 'opencomic-ai-upscale-fast-v3';
-const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/e32481d5c272441908b087cf0a3a3ad9375c6475/models/';
+const DOWNLOADING_URL = 'https://raw.githubusercontent.com/ollm/opencomic-ai-models/334cc9806f22110633989fe2e8f341872dfa5477/models/';
 
 const DAEMON_UPSCALERS: Upscaler[] = ['upscayl'];
 
