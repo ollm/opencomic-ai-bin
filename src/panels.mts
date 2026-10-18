@@ -136,7 +136,7 @@ async function image(source: string, options: OpenComicAIPanels, downloading?: D
 		const maskDest = OpenComicAI.intermediateDest(dest);
 		const upscaleDest = OpenComicAI.intermediateDest(dest);
 
-		green.toFile(maskDest);
+		await green.toFile(maskDest);
 
 		await OpenComicAI.image(maskDest, upscaleDest, options.upscale);
 
