@@ -114,6 +114,7 @@ export interface ModelObject {
 	files: string[];
 	scaleFiles?: Record<number, Model>;
 	supportCurrentPlatform?: boolean;
+	custom?: boolean;
 }
 
 let models: Record<ModelType, Record<string, ModelObject>> = {
@@ -1246,6 +1247,8 @@ export default class OpenComicAI {
 
 	public static setCustomModel = (model: ModelObject): void => {
 
+		model.custom = true;
+
 		if(!model.key)
 			throw new Error('Custom model must have a key');
 
@@ -1454,7 +1457,7 @@ export default class OpenComicAI {
 			{
 				const filePath = p.join(modelInfo.path as string, file);
 
-				if(!fs.existsSync(filePath))
+				if(!fs.existsSync(filePath) && !modelInfo.custom)
 				{
 					const base = new URL(`${modelInfo.type}/`, DOWNLOADING_URL);
 					const folder = new URL(`${modelInfo.folder}/`, base);
