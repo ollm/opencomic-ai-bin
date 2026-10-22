@@ -108,6 +108,7 @@ export interface ModelObject {
 	noise: number[] | undefined;
 	latency: number;
 	speed?: Speed;
+	modelsPath?: string;
 	folder: string;
 	path?: string;
 	files: string[];
@@ -1361,7 +1362,7 @@ export default class OpenComicAI {
 
 		return {
 			...modelInfo,
-			path: OpenComicAI.modelsPath ? p.join(OpenComicAI.modelsPath, modelType, modelInfo.folder) : p.join(modelType, modelInfo.folder),
+			path: modelInfo.modelsPath ? p.join(modelInfo.modelsPath, modelInfo.folder) : OpenComicAI.modelsPath ? p.join(OpenComicAI.modelsPath, modelType, modelInfo.folder) : p.join(modelType, modelInfo.folder),
 		};
 	}
 

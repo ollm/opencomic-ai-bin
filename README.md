@@ -101,16 +101,23 @@ Register a custom model so it can be used with `image()` or `pipeline()` like an
 OpenComicAI.setCustomModel(model: ModelObject): void
 ```
 
-The `model` argument follows the [`ModelObject`](#modelobject) interface. The `key`, `name`, `upscaler`, `scales`, and `files` properties are required when registering a custom model.
+The `model` argument must follow the [`ModelObject`](#modelobject) interface. When registering a custom model, the `key`, `name`, `upscaler`, `scales`, and `files` properties are required.
 
-The model files must already exist locally. Their paths are resolved as follows:
+The model files must already exist locally and must always be stored inside a folder named `models`. Their paths are resolved as follows when `OpenComicAI.setModelsPath()` is used:
 
+```text
+<OpenComicAI.modelsPath>/<type>/<folder>/<file>
 ```
-<modelsPath>/<type>/<folder>/<file>
+
+If the model defines a `modelsPath` property, its value is used as the base path instead:
+
+```text
+<modelInfo.modelsPath>/<folder>/<file>
 ```
 
-For example, with `type: 'custom'` and `folder: './models'`, place the model files in `<modelsPath>/custom/models/`.
-The `.bin` and `.param` files must use the exact names listed in `files`.
+For example, with `type: 'custom'` and `folder: './models'`, place the model files in `<OpenComicAI.modelsPath>/custom/models/`.
+
+The `.bin` and `.param` files must have exactly the names specified in `files`.
 
 ```ts
 const customModel = 'my-custom-model-1x';
@@ -140,7 +147,33 @@ await OpenComicAI.image('./input.png', './output.png', {
 });
 ```
 
-`setDirname()` is only needed when the custom model uses a binary outside the package's default runtime location. The `upscayl` binary must be available for the current platform, and the model name passed to `image()` or `pipeline()` must match the `key` used during registration.
+Alternatively, you can specify `modelsPath` directly in the custom model definition. In this case, place the model files in the directory specified by that property, following the same folder structure.
+
+```ts
+const customModel = 'my-custom-model-1x';
+
+OpenComicAI.setCustomModel({
+	key: customModel,
+	name: 'My Custom Model',
+	type: 'custom',
+	upscaler: 'upscayl',
+	scales: [1],
+	noise: undefined,
+	latency: 1,
+	modelsPath: '/path/to/models',
+	folder: './models',
+	files: [
+		`${customModel}.bin`,
+		`${customModel}.param`,
+	],
+});
+
+await OpenComicAI.image('./input.png', './output.png', {
+	model: customModel,
+});
+```
+
+`setDirname()` is only needed if you also want to use a custom runtime directory, for example, when a custom model requires a custom binary. The `upscayl` binary must be available for the current platform, and the model name passed to `image()` or `pipeline()` must match the `key` used when registering the model.
 
 ### OpenComicAI.setConcurrentDaemons
 
@@ -496,10 +529,10 @@ Model | Name | Upscaler | Source
 
 ### Table (10 images 512x512px)
 
-Model                          | Disabled              | Enabled              | Disabled vs Enabled
+Model						  | Disabled			  | Enabled			  | Disabled vs Enabled
 -------------------------------|-----------------------|----------------------|--------
-OpenComic AI Upscale Lite      | 52.087s               | 7.646s               | 6.81x
-RealESRGAN x4 Plus             | 73.273s               | 23.199s              | 3.16x
+OpenComic AI Upscale Lite	  | 52.087s			   | 7.646s			   | 6.81x
+RealESRGAN x4 Plus			 | 73.273s			   | 23.199s			  | 3.16x
 
 ### OpenComic AI Upscale Lite
 
@@ -592,12 +625,12 @@ If you use this project, please cite it as follows.
 
 ``` bibtex
 @software{opencomic_ai,
-    author = {Llopart Mora, Oleguer},
-    title = {{OpenComic AI}},
-    year = {2026},
-    version = {2.0},
-    doi = {10.5281/zenodo.20802370},
-    url = {https://doi.org/10.5281/zenodo.20802370}
+	author = {Llopart Mora, Oleguer},
+	title = {{OpenComic AI}},
+	year = {2026},
+	version = {2.0},
+	doi = {10.5281/zenodo.20802370},
+	url = {https://doi.org/10.5281/zenodo.20802370}
 }
 ```
 
@@ -607,12 +640,12 @@ Release models citation. To see the differences between versions, you can check 
 
 ``` bibtex
 @software{opencomic_ai_models_v3_0,
-    author = {Llopart Mora, Oleguer},
-    title = {{OpenComic AI v3.0 Models}},
-    year = {2026},
-    version = {3.0},
-    doi = {10.5281/zenodo.23245460},
-    url = {https://doi.org/10.5281/zenodo.23245460}
+	author = {Llopart Mora, Oleguer},
+	title = {{OpenComic AI v3.0 Models}},
+	year = {2026},
+	version = {3.0},
+	doi = {10.5281/zenodo.23245460},
+	url = {https://doi.org/10.5281/zenodo.23245460}
 }
 ```
 
@@ -620,12 +653,12 @@ Release models citation. To see the differences between versions, you can check 
 
 ``` bibtex
 @software{opencomic_ai_models_v2_0,
-    author = {Llopart Mora, Oleguer},
-    title = {{OpenComic AI v2.0 Models}},
-    year = {2026},
-    version = {2.0},
-    doi = {10.5281/zenodo.22967095},
-    url = {https://doi.org/10.5281/zenodo.22967095}
+	author = {Llopart Mora, Oleguer},
+	title = {{OpenComic AI v2.0 Models}},
+	year = {2026},
+	version = {2.0},
+	doi = {10.5281/zenodo.22967095},
+	url = {https://doi.org/10.5281/zenodo.22967095}
 }
 ```
 
@@ -633,12 +666,12 @@ Release models citation. To see the differences between versions, you can check 
 
 ``` bibtex
 @software{opencomic_ai_models_v1_0,
-    author = {Llopart Mora, Oleguer},
-    title = {{OpenComic AI v1.0 Models}},
-    year = {2026},
-    version = {1.0.1},
-    doi = {10.5281/zenodo.20802371},
-    url = {https://doi.org/10.5281/zenodo.20802371}
+	author = {Llopart Mora, Oleguer},
+	title = {{OpenComic AI v1.0 Models}},
+	year = {2026},
+	version = {1.0.1},
+	doi = {10.5281/zenodo.20802371},
+	url = {https://doi.org/10.5281/zenodo.20802371}
 }
 ```
 
