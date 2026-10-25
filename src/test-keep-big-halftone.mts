@@ -36,7 +36,7 @@ const dest = resolve(getArg('--dest') || './debug');
 
 	await OpenComicAI.pipeline(image, p.join(dest, '/test.png'), [
 		{
-			model: 'opencomic-ai-descreen-hard-lite',
+			model: model,
 			// tileSize: 512,
 			keepBigHalftone: {
 				model: 'opencomic-ai-descreen-mask-fast-v3-test-500000',

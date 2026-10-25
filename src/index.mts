@@ -1666,7 +1666,7 @@ export default class OpenComicAI {
 			args.unshift('-i', '');
 
 			if(DAEMON_UPSCALERS.includes(modelInfo.upscaler) && OpenComicAI.concurrentDaemons > 0)
-				promises.push(OpenComicAI.spawnDaemon(binary, args));
+				promises.push(OpenComicAI.spawnDaemon(binary, args, modelInfo));
 		}
 
 		await Promise.all(promises);
@@ -1806,17 +1806,19 @@ export default class OpenComicAI {
 
 		let result = '';
 
-		// console.log(`Running command: ${binary} ${args.join(' ')}`);
+		// console.log(`Running command: ${binary} ${args.map(arg => arg.includes(' ') ? `"${arg}"` : arg).join(' ')}`);
 
 		return new Promise<string>((resolve, reject) => {
 
 			const _spawn = DAEMON_UPSCALERS.includes(modelInfo.upscaler) && OpenComicAI.concurrentDaemons > 0 ? OpenComicAI.spawnDaemon : OpenComicAI.spawn;
 
-			_spawn(binary, args, {
+			_spawn(binary, args, modelInfo, {
 				data: (data) => {
 
 					data = data.toString();
 					result += data;
+
+					OpenComicAI.checkErrors(data, null, modelInfo);
 
 					if(!progress)
 						return;
@@ -1849,14 +1851,45 @@ export default class OpenComicAI {
 					const lastLines = lines.slice(-20).join('\n');
 
 					console.error(lastLines);
-					reject(new Error(`Process exited with code ${code}: ${lastLine}`));
+					reject(new Error(`Process exited with code ${code}: ${lastLine.trim()}.`));
 
 				}
 			});
 		});
 	}
 
-	private static spawn = (binary: string, args: string[], {data, error, close}: Spawn): ReturnType<typeof spawn> => {
+	private static sendError = (spawn: Spawn | null, message: string) => {
+
+		if(spawn)
+			spawn.error(message);
+		else
+			throw new Error(message);
+
+	}
+
+	private static checkErrors = (data: string, spawn: Spawn | null, modelInfo: ModelObject) => {
+
+		if(/fopen .*\.(?:param|bin) failed/.test(data))
+		{
+			OpenComicAI.sendError(spawn, `Failed to open model file, check if the file exists and is accessible. (Model: ${modelInfo.name})`);
+		}
+
+		if(/Error\:/.test(data))
+		{
+			const string = data.split('Error:')[1].trim();
+			const lines = string.split('\n');
+
+			const error = lines[0];
+			const reason = lines[1] && /Reason\:/.test(lines[1]) ? lines[1].split('Reason:')[1].trim() : undefined;
+
+			const message = error + (reason ? `, ${reason}` : '') + ` (Model: ${modelInfo.name})`;
+			
+			OpenComicAI.sendError(spawn, message);
+		}
+
+	}
+
+	private static spawn = (binary: string, args: string[], modelInfo: ModelObject, {data, error, close}: Spawn): ReturnType<typeof spawn> => {
 
 		const proc = spawn(binary, args);
 
@@ -1868,7 +1901,7 @@ export default class OpenComicAI {
 
 	}
 
-	private static spawnDaemon = async (binary: string, args: string[], spawn?: Spawn): Promise<void> => {
+	private static spawnDaemon = async (binary: string, args: string[], modelInfo: ModelObject, spawn?: Spawn): Promise<void> => {
 
 		const singleFlags = ['-x', '-p'];
 		const initFlags = ['-m', '-n', '-g', '-z', '-t', '-y', '-u', '-k', '-p'];
@@ -1902,7 +1935,7 @@ export default class OpenComicAI {
 		{
 			return new Promise<void>((resolve) => {
 
-				const daemon: Daemon = OpenComicAI.daemon(key, binary, initArgs, resolve);
+				const daemon: Daemon = OpenComicAI.daemon(key, binary, initArgs, modelInfo, resolve);
 				if(spawn) daemon.push(daemonArgs, spawn);
 
 			});
@@ -1912,7 +1945,7 @@ export default class OpenComicAI {
 
 	}
 
-	private static daemon = (key: string, binary: string, args: string[], onReady?: () => void): Daemon => {
+	private static daemon = (key: string, binary: string, args: string[], modelInfo: ModelObject, onReady?: () => void): Daemon => {
 
 		let daemon: Daemon;
 
@@ -1923,17 +1956,13 @@ export default class OpenComicAI {
 		let idleTimer: NodeJS.Timeout;
 		let currentSpawn: Spawn | null = null;
 
-		const proc = OpenComicAI.spawn(binary, args, {
+		const proc = OpenComicAI.spawn(binary, args, modelInfo, {
 			data: (data) => {
 
 				data = data.toString();
 				const ready = /Ready\>/.test(data);
-				
-				if(/Error\:/.test(data))
-				{
-					const message = data.split('Error:')[1].trim().split('\n')[0];
-					if(currentSpawn) currentSpawn.error(`Error: ${message}`);
-				}
+
+				OpenComicAI.checkErrors(data, currentSpawn, modelInfo);
 
 				if(ready && !modelLoaded && !currentSpawn) // First ready
 				{
