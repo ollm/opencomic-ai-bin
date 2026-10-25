@@ -4,5 +4,10 @@ assets
 debug
 test-files
 
+dist/**
+!dist/index.cjs
+!dist/index.d.ts
+!dist/index.mjs
+
 # OSX
 .DS_Store
