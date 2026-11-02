@@ -104,6 +104,7 @@ export interface ModelObject {
 	type?: ModelType;
 	tileSize?: number;
 	tileSizeFromMem128?: number; // Model memory usage in MB measured at tile=128 for auto tile estimation
+	tileAlignment?: number; // Multiple to which tile input dimensions are padded, 1 disables alignment.
 	scales: number[];
 	noise: number[] | undefined;
 	latency: number;
@@ -810,6 +811,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			name: 'OpenComic AI Artifact Removal Balanced v3',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 66,
+			tileAlignment: 4,
 			scales: [1],
 			noise: undefined,
 			latency: 0.5,
@@ -823,6 +825,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			name: 'OpenComic AI Artifact Removal Quality v3',
 			upscaler: 'upscayl',
 			tileSizeFromMem128: 419,
+			tileAlignment: 4,
 			scales: [1],
 			noise: undefined,
 			latency: 2.97,
@@ -983,6 +986,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			name: 'OpenComic AI Panels Fast 1024 Channels Inverted v4',
 			upscaler: 'upscayl',
 			tileSize: 1024,
+			tileAlignment: 16,
 			scales: [1],
 			noise: undefined,
 			latency: 0,
@@ -1009,6 +1013,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			name: 'OpenComic AI Panels Fast Big 1024 Channels Inverted Custom Arch v2.1',
 			upscaler: 'upscayl',
 			tileSize: 1024,
+			tileAlignment: 16,
 			scales: [1],
 			noise: undefined,
 			latency: 0,
@@ -1023,6 +1028,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			name: 'OpenComic AI Panels Fast Big 1024 Channels Inverted Custom Arch v2.1 Pass 2',
 			upscaler: 'upscayl',
 			tileSize: 1024,
+			tileAlignment: 16,
 			scales: [1],
 			noise: undefined,
 			latency: 0,
@@ -1036,6 +1042,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			name: 'OpenComic AI Panels Fast Big 1024 Channels Inverted Custom Arch v2.1',
 			upscaler: 'upscayl',
 			tileSize: 1024,
+			tileAlignment: 16,
 			scales: [1],
 			noise: undefined,
 			latency: 0,
