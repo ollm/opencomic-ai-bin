@@ -98,13 +98,14 @@ const upscalers: Record<Upscaler, UpscalerObject> = {
 }
 
 export interface ModelObject {
-	key?: Model,
+	key?: Model;
 	name: string;
 	upscaler: Upscaler;
 	type?: ModelType;
 	tileSize?: number;
 	tileSizeFromMem128?: number; // Model memory usage in MB measured at tile=128 for auto tile estimation
 	tileAlignment?: number; // Multiple to which tile input dimensions are padded, 1 disables alignment.
+	fp32?: boolean;
 	scales: number[];
 	noise: number[] | undefined;
 	latency: number;
@@ -987,6 +988,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			upscaler: 'upscayl',
 			tileSize: 1024,
 			tileAlignment: 16,
+			fp32: true,
 			scales: [1],
 			noise: undefined,
 			latency: 0,
@@ -1712,7 +1714,7 @@ export default class OpenComicAI {
 		const memorySafePercentage: string | false = options.memorySafePercentage?.toString() ?? false;
 		const gpuId: string | false = options.gpuId ?? false;
 		const tta: boolean = !!options.tta;
-		const fp32: boolean = !!options.fp32;
+		const fp32: boolean = !!options.fp32 || !!modelInfo?.fp32;
 
 		if(noise !== false && !modelInfo?.noise?.includes(noise))
 			noise = modelInfo?.noise ? OpenComicAI.closest(modelInfo.noise, noise) : false;
