@@ -1716,6 +1716,9 @@ export default class OpenComicAI {
 		const tta: boolean = !!options.tta;
 		const fp32: boolean = !!options.fp32 || !!modelInfo?.fp32;
 
+		// Model Info only options
+		const tileAlignment: number | false = modelInfo.tileAlignment ? +modelInfo.tileAlignment : false;
+
 		if(noise !== false && !modelInfo?.noise?.includes(noise))
 			noise = modelInfo?.noise ? OpenComicAI.closest(modelInfo.noise, noise) : false;
 
@@ -1748,6 +1751,7 @@ export default class OpenComicAI {
 			...(gpuId ? ['-g', gpuId] : []),
 			...(tta ? ['-x'] : []),
 			...(fp32 ? ['-p'] : []),
+			...(tileAlignment ? ['-A', tileAlignment.toString()] : []),
 		];
 
 		switch(modelInfo.upscaler)
@@ -1913,7 +1917,7 @@ export default class OpenComicAI {
 	private static spawnDaemon = async (binary: string, args: string[], modelInfo: ModelObject, spawn?: Spawn): Promise<void> => {
 
 		const singleFlags = ['-x', '-p'];
-		const initFlags = ['-m', '-n', '-g', '-z', '-t', '-y', '-u', '-k', '-p'];
+		const initFlags = ['-m', '-n', '-g', '-z', '-t', '-y', '-u', '-k', '-p', '-A'];
 
 		const initArgs: string[] = [];
 		const daemonArgs: string[] = [];
