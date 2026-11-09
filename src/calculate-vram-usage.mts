@@ -6,6 +6,8 @@ import {getArg, ifArg} from './args.mjs';
 const forceModel = getArg('--model');
 const onlyOpenComic = getArg('--only-opencomic');
 const tileSize = +(getArg('--tile-size') ?? 128);
+const tileSizes = getArg('--tile-sizes')?.split(',').map(Number) ?? [tileSize];
+const ignoreModelMemoryUpperLimit = +(getArg('--ignore-model-memory-upper-limit') ?? Infinity);
 
 const printVramLine = ifArg('--print-vram-line');
 
@@ -42,18 +44,16 @@ function getAMDCurrentVRAM() {
 	console.log('Calculating vram usage for available models...');
 
 	const images = [
-		'../assets/sample-image-1.jpg',
-		'../assets/sample-image-1.jpg',
-		'../assets/sample-image-1.jpg',
-		'../assets/sample-image-1.jpg',
-		'../assets/sample-image-1.jpg',
-		'../assets/sample-image-1.jpg',
-		'../assets/sample-image-1.jpg',
-		'../assets/sample-image-1.jpg',
-		'../assets/sample-image-1.jpg',
-		'../assets/sample-image-1.jpg',
-		// '../assets/sample-image-2.jpg',
-		// '../assets/sample-image-3.jpg',
+		'../assets/sample-image-2048x2048.jpg',
+		'../assets/sample-image-2048x2048.jpg',
+		//'../assets/sample-image-2048x2048.jpg',
+		//'../assets/sample-image-2048x2048.jpg',
+		//'../assets/sample-image-2048x2048.jpg',
+		//'../assets/sample-image-2048x2048.jpg',
+		//'../assets/sample-image-2048x2048.jpg',
+		//'../assets/sample-image-2048x2048.jpg',
+		//'../assets/sample-image-2048x2048.jpg',
+		//'../assets/sample-image-2048x2048.jpg',
 	];
 
 	OpenComicAI.setModelsPath('../assets/models');
@@ -67,6 +67,9 @@ function getAMDCurrentVRAM() {
 
 	// OpenComicAI.setConcurrentDaemons(0);
 
+	const modelsTileSizesMem: [string, string][] = [];
+	const modelsTileSizesMemLow: [string, string][] = [];
+
 	for(const _model of modelsList)
 	{
 		if(onlyOpenComic && !_model.startsWith('opencomic-'))
@@ -74,97 +77,127 @@ function getAMDCurrentVRAM() {
 
 		const model = OpenComicAI.model(_model);
 		let scale = model.scales[model.scales.length - 1] ?? 4;
+
 		if(scale > 4) scale = 4;
 
-		const options: OpenComicAIOptions = {
-			model: _model,
-			tileSize: tileSize,
-			scale: scale,
-		};
-
-		let startTime = Date.now();
-
-		const prevVram = getAvgCurrentVRAM();
-
-		if(perloadFirst && OpenComicAI.concurrentDaemons > 0)
+		if(ignoreModelMemoryUpperLimit && model.tileSizeFromMem && typeof model.tileSizeFromMem === 'string')
 		{
-			console.log('Preloading model...', model.name);
-			console.time(`Preload model: ${model.name}`);
+			const memEntries = model.tileSizeFromMem.split(',');
 
-			// Preload model
-			await OpenComicAI.preload([
-				options,
-			]);
+			for(const entry of memEntries)
+			{
+				const [size, mem] = entry.split(':').map(Number);
 
-			console.timeEnd(`Preload model: ${model.name}`);
+				if(size && mem && mem > ignoreModelMemoryUpperLimit)
+					continue;
+			}
 		}
 
-		const usageVram: number[] = [];
+		const tileSizesMem: string[] = [];
+		const tileSizesMemLow: string[] = [];
 
-		for(let i = 0, len = images.length; i < len; i++)
+		for(const tileSize of tileSizes)
 		{
-			const image = images[i];
+			const options: OpenComicAIOptions = {
+				model: _model,
+				tileSize: tileSize,
+				scale: scale,
+			};
+	
+			let startTime = Date.now();
 
-			console.time(`Processing image ${i + 1}/${len} for model: ${model.name}`);
+			const prevVram = getAvgCurrentVRAM();
 
-			await OpenComicAI.pipeline(image, '../assets/calculate-vram-usage_'+_model+'.jpg', [
-				options,
-			], (progress) => {
-
-				if(progress === undefined)
-					progress = 0;
-
-				// console.log(`Processing image ${i + 1}/${len} for model: ${model.name} - ${Math.round(progress * 100)}%`);
-
-			}, {
-				start: () => {
-
-					console.log(`Start download model: ${model.name}`);
-
-				},
-				progress: (progress) => {
-
-					console.log(`Downloading model: ${model.name} - ${Math.round(progress * 100)}%`);
-
-				},
-				end: () => {
-
-					console.log(`End download model: ${model.name}`);
-
-				},
-			});
-
-			console.timeEnd(`Processing image ${i + 1}/${len} for model: ${model.name}`);
-
-			if(i === 0)
+			if(perloadFirst && OpenComicAI.concurrentDaemons > 0)
 			{
-				// Sleep for a short duration to allow VRAM to stabilize
-				await new Promise(resolve => setTimeout(resolve, 1000));
+				console.log('Preloading model...', model.name);
+				console.time(`Preload model: ${model.name}`);
+
+				// Preload model
+				await OpenComicAI.preload([
+					options,
+				]);
+
+				console.timeEnd(`Preload model: ${model.name}`);
 			}
 
-			const currentVram = getAvgCurrentVRAM();
+			const usageVram: number[] = [];
 
-			if(printVramLine)
-				console.log(`Current VRAM: ${currentVram} MB, Usage VRAM: ${currentVram - prevVram} MB`);
+			for(let i = 0, len = images.length; i < len; i++)
+			{
+				const image = images[i];
 
-			usageVram.push(currentVram - prevVram);
+				console.time(`Processing image ${i + 1}/${len} for model: ${model.name}`);
 
-			if(ignoreFirst && i === 0)
-				startTime = Date.now();
+				await OpenComicAI.pipeline(image, '../assets/calculate-vram-usage_'+_model+'.jpg', [
+					options,
+				], (progress) => {
+
+					if(progress === undefined)
+						progress = 0;
+
+					// console.log(`Processing image ${i + 1}/${len} for model: ${model.name} - ${Math.round(progress * 100)}%`);
+
+				}, {
+					start: () => {
+
+						console.log(`Start download model: ${model.name}`);
+
+					},
+					progress: (progress) => {
+
+						console.log(`Downloading model: ${model.name} - ${Math.round(progress * 100)}%`);
+
+					},
+					end: () => {
+
+						console.log(`End download model: ${model.name}`);
+
+					},
+				});
+
+				console.timeEnd(`Processing image ${i + 1}/${len} for model: ${model.name}`);
+
+				if(i === 0)
+				{
+					// Sleep for a short duration to allow VRAM to stabilize
+					await new Promise(resolve => setTimeout(resolve, 2000));
+				}
+
+				const currentVram = getAvgCurrentVRAM();
+
+				if(printVramLine)
+					console.log(`Current VRAM: ${currentVram} MB, Usage VRAM: ${currentVram - prevVram} MB`);
+
+				usageVram.push(currentVram - prevVram);
+
+				if(ignoreFirst && i === 0)
+					startTime = Date.now();
+			}
+
+			OpenComicAI.closeAllDaemons();
+
+			// Sleep for a short duration to allow VRAM to stabilize
+			await new Promise(resolve => setTimeout(resolve, 2000));
+
+			const avgUsageVram = Math.round((usageVram.reduce((a, b) => a + b, 0) / usageVram.length) * 10) / 10;
+			const lowestUsageVram = Math.min(...usageVram);
+
+			const endTime = Date.now();
+			const latency = endTime - startTime;
+			console.log(`Model: ${model.name}, Latency: ${latency} ms, VRAM usage in tile size ${tileSize}: ${avgUsageVram}MB, lowest: ${lowestUsageVram}MB, results: ${usageVram.map(v => Math.round(v)).join(', ')}`);
+			latencies[model.name] = latency;
+			latenciesList.push(latency);
+
+			tileSizesMem.push(`${tileSize}:${Math.ceil(avgUsageVram)}`);
+			tileSizesMemLow.push(`${tileSize}:${Math.ceil(lowestUsageVram)}`);
 		}
 
-		OpenComicAI.closeAllDaemons();
+		modelsTileSizesMem.push([_model, tileSizesMem.join(',')]);
+		console.log(`Tile sizes memory usage: ${_model}: ${tileSizesMem.join(', ')}`);
 
-		// Sleep for a short duration to allow VRAM to stabilize
-		await new Promise(resolve => setTimeout(resolve, 1000));
-
-		const avgUsageVram = Math.round((usageVram.reduce((a, b) => a + b, 0) / usageVram.length) * 10) / 10;
-
-		const endTime = Date.now();
-		const latency = endTime - startTime;
-		console.log(`Model: ${model.name}, Latency: ${latency} ms, VRAM usage in tile size ${tileSize}: ${avgUsageVram}MB`);
-		latencies[model.name] = latency;
-		latenciesList.push(latency);
+		modelsTileSizesMemLow.push([_model, tileSizesMemLow.join(',')]);
+		console.log(`Tile sizes memory usage (lowest): ${_model}: ${tileSizesMemLow.join(', ')}`);
 	}
 
 	// Min latency as 0.5 value max as 10
@@ -181,5 +214,19 @@ function getAMDCurrentVRAM() {
 
 	console.log('Latency calculation completed.');
 	console.log('Latencies:', latencies);
+	
+	console.log('Tile sizes memory usage:');
+
+	for(const [model, mem] of modelsTileSizesMem)
+	{
+		console.log(`${model} | ${mem}`);
+	}
+
+	console.log('Tile sizes memory usage (lowest):');
+
+	for(const [model, mem] of modelsTileSizesMemLow)
+	{
+		console.log(`${model} | ${mem}`);
+	}
 
 })();
