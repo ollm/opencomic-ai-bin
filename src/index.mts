@@ -1860,7 +1860,7 @@ export default class OpenComicAI {
 
 		let result = '';
 
-		console.log(`Running command: ${binary} ${args.map(arg => arg.includes(' ') ? `"${arg}"` : arg).join(' ')}`);
+		// console.log(`Running command: ${binary} ${args.map(arg => arg.includes(' ') ? `"${arg}"` : arg).join(' ')}`);
 
 		return new Promise<string>((resolve, reject) => {
 
