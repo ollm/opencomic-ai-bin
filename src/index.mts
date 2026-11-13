@@ -101,7 +101,7 @@ const tileMemoryProfiles = {
 	ESRGAN_Upscale: '128:970,256:2963',
 	ESRGAN_LITE: '128:335,256:554,512:1654',
 	ESRGAN_LITE_Upscale: '128:455,256:1453,512:5382',
-	RealCUGAN: '128:224,256:382,512:1876,1024:5870',
+	RealCUGAN: '128:368,256:817,512:3115', // '128:224,256:382,512:1876,1024:5870', // Higer memory usage observed is in 3x scale
 	Waifu2x_CUnet: '128:99,256:434,512:1587,1024:5941',
 	Waifu2x_UpConv: '128:79,256:240,512:860,1024:3377',
 };
