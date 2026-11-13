@@ -1,6 +1,8 @@
 # opencomic-ai-bin
 
-This package provides pre-built binaries (`realcugan`, `waifu2x`, and `upscayl`) through a simple Node.js API.
+This package provides pre-built binaries (~~`realcugan`~~, ~~`waifu2x`~~, and `upscayl`) through a simple Node.js API.
+
+RealCUGAN and Waifu2x models are now supported through `upscayl`, their standalone binaries are no longer included.
 
 Model files are not included, they are downloaded automatically when needed.
 
@@ -28,7 +30,7 @@ import OpenComicAI from 'opencomic-ai-bin';
 
 ```ts
 import OpenComicAI from 'opencomic-ai-bin';
-import sharp from 'sharp'; // This is optional, only needed if you want to keep ICC profile or use a YOLO26 model
+import sharp from 'sharp'; // Optional, required for ICC profile preservation or panel detection
 
 (async () => {
 
@@ -177,7 +179,7 @@ await OpenComicAI.image('./input.png', './output.png', {
 
 ### OpenComicAI.setConcurrentDaemons
 
-Set the maximum number of concurrent daemons (`upscayl` models only), 0 disables daemons.
+Set the maximum number of concurrent daemons (`upscayl` models only), 0 disables daemons. The default is 5.
 
 Daemons help speed up processing loading model only once and not for each image. [See comparative performance.](#daemon-comparative-performance)
 
@@ -307,10 +309,25 @@ OpenComicAI.pipeline(
 	source: string,
 	dest: string,
 	steps: OpenComicAIOptions[],
-	progress?: (progress: number) => void,
-	downloading?: Downloading
+	progress?: ((progress: number) => void) | false,
+	downloading?: Downloading | false
 ): Promise<string>
 ```
+
+### OpenComicAI.panels.image
+
+Detect panels in an image and return their bounding boxes and masks. This requires a `sharp` instance configured with `setSharp()`.
+
+```ts
+const detection = await OpenComicAI.panels.image('./page.png', {
+	model: 'opencomic-ai-panels-fast',
+	minPixels: 50,
+});
+
+console.log(detection.boxes);
+```
+
+Each box includes its coordinates and a pixel mask. `OpenComicAI.panels.path()` and `OpenComicAI.panels.render()` can be used to create vector paths or render detection results.
 
 ### OpenComicAI.closest
 
@@ -358,7 +375,7 @@ type ModelType =
 ### `Upscaler`
 
 ```typescript
-type Upscaler = 'realcugan' | 'upscayl' | 'waifu2x';
+type Upscaler = 'upscayl';
 ```
 
 ### `Speed`
@@ -372,8 +389,9 @@ type Speed = 'Very Fast' | 'Fast' | 'Medium' | 'Slow' | 'Very Slow';
 ```typescript
 interface OpenComicAIOptions {
 	model?: Model;
-	noise?: 0 | 1 | 2 | 3;
+	noise?: -1 | 0 | 1 | 2 | 3;
 	scale?: number;
+	iterations?: number;
 	tileSize?: number | 'auto';
 	maxTileSize?: number;
 	memorySafePercentage?: number;
@@ -384,6 +402,21 @@ interface OpenComicAIOptions {
 	keepBigHalftone?: OpenComicAIKeepBigHalftone;
 }
 ```
+
+Options:
+
+- `model`: Model name passed to the binary, defaults to `opencomic-ai-upscale-fast-v3`.
+- `noise`: Selects a model's denoising variant (`-1` means no denoising/conservative when available), unsupported levels are adjusted to the closest variant.
+- `scale`: Requested output scale (`-s`), defaults to the model's largest supported scale, and unsupported values are adjusted to the closest supported scale.
+- `iterations`: Repeats a step in `pipeline()` 1–3 times (default: 1), iterative-scale models may also repeat their 2x model to reach larger scales.
+- `tileSize`: Tile size (`-t`), use `0` or `'auto'` for automatic sizing, which can use the model's memory profile.
+- `maxTileSize`: Maximum tile-size cap for automatic sizing (`-k`), binary default: 2048.
+- `memorySafePercentage`: Percentage of the heap budget available to automatic tile estimation (`-u`), binary default: 50.
+- `gpuId`: GPU device identifier (`-g`), binary default: `auto`.
+- `threads`: Sets the load, processing, and save thread counts to the same value (`-j`), binary default: `1:2:2`.
+- `tta`: Enables test-time augmentation (`-x`), when `true`.
+- `fp32`: Forces the 32-bit inference path (`-p`), disabling FP16/INT8 model storage when `true`.
+- `keepBigHalftone`: Options for preserving large halftone components, see [`OpenComicAIKeepBigHalftone`](#opencomicaikeepbighalftone).
 
 ### `OpenComicAIKeepBigHalftone`
 
@@ -398,7 +431,12 @@ interface OpenComicAIKeepBigHalftone {
 }
 ```
 
-`minSize` is the minimum component size as a percentage of the image height. `minPixels` filters out components smaller than the specified number of pixels. `artifactRemoval` can be used to process the selected regions with an artifact-removal model.
+Options:
+
+- `model`: Mask model to use, or `'auto'` to select one automatically.
+- `minSize`: Minimum component size as a percentage of the image height.
+- `minPixels`: Ignore components smaller than this number of pixels.
+- `artifactRemoval`: Optionally process selected regions with an artifact-removal model.
 
 ### `OpenComicAIArtifactRemoval`
 
@@ -417,11 +455,32 @@ interface OpenComicAIPanels {
 	model: ModelPanels | 'auto';
 	minPixels?: number;
 	keepAspectRatio?: boolean;
+	imageLevels?: ImageLevelsOptions;
 	upscale?: OpenComicAIUpscale;
 }
 ```
 
-`upscale` can be used to upscale the panel mask before detecting its components.
+Options:
+
+- `model`: Panel-detection model to use, or `'auto'` to select one automatically.
+- `minPixels`: Ignore detected panels smaller than this number of pixels.
+- `keepAspectRatio`: Preserve the input image's aspect ratio when `true` (default).
+- `imageLevels`: Adjust the grayscale image before detection.
+- `upscale`: Optionally upscale the panel mask before detecting its components.
+
+`ImageLevelsOptions` properties:
+
+```ts
+interface ImageLevelsOptions {
+	dark: number;
+	light: number;
+	smoothness: number;
+}
+```
+
+- `dark`: Amount of dark-level adjustment.
+- `light`: Amount of light-level adjustment.
+- `smoothness`: Smoothness of the level adjustment.
 
 ### `ModelObject`
 
@@ -432,16 +491,22 @@ interface ModelObject {
 	upscaler: Upscaler;
 	type?: ModelType;
 	tileSize?: number; // Force tile size for this model, overrides auto tile estimation
-	tileSizeFromMem128?: number; // Model memory usage in MB measured at tile=128 for auto tile estimation
+	tileSizeFromMem?: number | string; // Memory profile used for automatic tile-size estimation
+	tileAlignment?: number;
+	tileProfile?: string | Record<number, string>;
+	fp32?: boolean;
 	scales: number[];
+	scaleStrategy?: 'native' | 'iterative';
 	noise: number[] | undefined;
 	latency: number; // From 0.5 (Fastest model) to 10 (Slowest model)
 	speed?: Speed;
+	modelsPath?: string;
 	folder: string;
 	path?: string;
 	files: string[];
-	scaleFiles?: Record<number, Model>;
+	scaleFiles?: Record<number, Model | Record<number, Model>>;
 	supportCurrentPlatform?: boolean;
+	custom?: boolean;
 }
 ```
 
@@ -501,13 +566,13 @@ Model | Name | Upscaler | Source
 `opencomic-ai-upscale-compact` | OpenComic AI Upscale Fast | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
 `opencomic-ai-upscale-lite` | OpenComic AI Upscale Balanced | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
 `opencomic-ai-upscale` | OpenComic AI Upscale Quality | `upscayl` | [ollm/opencomic-ai-training](https://github.com/ollm/opencomic-ai-training)
-`realcugan` | RealCUGAN | `realcugan` | [Moebytes/waifu2x](https://github.com/Moebytes/waifu2x/tree/eaadd13cf54ba3bcb3cbd3e4a1cb2cd922420c9b/real-cugan/models-se)
+`realcugan` | RealCUGAN | `upscayl` | [Moebytes/waifu2x](https://github.com/Moebytes/waifu2x/tree/eaadd13cf54ba3bcb3cbd3e4a1cb2cd922420c9b/real-cugan/models-se)
 `realesr-animevideov3` | RealESR AnimeVideo v3 | `upscayl` | [xinntao/Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)
 `realesrgan-x4plus` | RealESRGAN x4 Plus | `upscayl` | [xinntao/Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)
 `realesrgan-x4plus-anime` | RealESRGAN x4 Plus Anime | `upscayl` | [xinntao/Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)
 `realesrnet-x4plus` | RealESRNet x4 Plus | `upscayl` | [xinntao/Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)
-`waifu2x-models-cunet` | Waifu2x CUnet | `waifu2x` | [Moebytes/waifu2x](https://github.com/Moebytes/waifu2x/tree/eaadd13cf54ba3bcb3cbd3e4a1cb2cd922420c9b/waifu2x/models-cunet)
-`waifu2x-models-upconv` | Waifu2x UpConv | `waifu2x` | [Moebytes/waifu2x](https://github.com/Moebytes/waifu2x/tree/eaadd13cf54ba3bcb3cbd3e4a1cb2cd922420c9b/waifu2x/models-upconv_7_anime_style_art_rgb)
+`waifu2x-models-cunet` | Waifu2x CUnet | `upscayl` | [Moebytes/waifu2x](https://github.com/Moebytes/waifu2x/tree/eaadd13cf54ba3bcb3cbd3e4a1cb2cd922420c9b/waifu2x/models-cunet)
+`waifu2x-models-upconv` | Waifu2x UpConv | `upscayl` | [Moebytes/waifu2x](https://github.com/Moebytes/waifu2x/tree/eaadd13cf54ba3bcb3cbd3e4a1cb2cd922420c9b/waifu2x/models-upconv_7_anime_style_art_rgb)
 `4x-WTP-ColorDS` | WTP ColorDS | `upscayl` | [OpenModelDB](https://openmodeldb.info/models/4x-WTP-ColorDS)
 `remacri-4x` | Remacri | `upscayl` | [upscayl/upscayl](https://github.com/upscayl/upscayl/tree/d6e9a36b894d302e6268dc239e8a51ff29c49ded/resources/models)
 `ultramix-balanced-4x` | Ultramix Balanced | `upscayl` | [upscayl/upscayl](https://github.com/upscayl/upscayl/tree/d6e9a36b894d302e6268dc239e8a51ff29c49ded/resources/models)

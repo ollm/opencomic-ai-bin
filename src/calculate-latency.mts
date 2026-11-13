@@ -51,7 +51,7 @@ const tileSize = getArg('--tile-size');
 		};
 
 		if(tileSize)
-			options.tileSize = tileSize;
+			options.tileSize = Number(tileSize);
 
 		let startTime = Date.now();
 

@@ -46,9 +46,9 @@ function getAMDCurrentVRAM() {
 	const images = [
 		'../assets/sample-image-2048x2048.jpg',
 		'../assets/sample-image-2048x2048.jpg',
-		//'../assets/sample-image-2048x2048.jpg',
-		//'../assets/sample-image-2048x2048.jpg',
-		//'../assets/sample-image-2048x2048.jpg',
+		'../assets/sample-image-2048x2048.jpg',
+		'../assets/sample-image-2048x2048.jpg',
+		'../assets/sample-image-2048x2048.jpg',
 		//'../assets/sample-image-2048x2048.jpg',
 		//'../assets/sample-image-2048x2048.jpg',
 		//'../assets/sample-image-2048x2048.jpg',

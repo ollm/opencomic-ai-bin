@@ -23,7 +23,7 @@ const dest = resolve(getArg('--dest') || './debug');
 (async function(){
 
 	await fsp.mkdir(dest, {recursive: true});
-	await deleteFiles(dest);
+	// await deleteFiles(dest);
 
 	// Models path, if the model is not found in this folder, it will be downloaded
 	OpenComicAI.setModelsPath(modelsPath);

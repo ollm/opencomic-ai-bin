@@ -67,6 +67,21 @@ export default [
 		],
 	},
 	{
+		input: 'src/test-model.mts',
+		output: [
+			{
+				file: 'dist/test-model.mjs',
+				format: 'es',
+			},
+		],
+		plugins: [
+			typescript({
+				tsconfig: './tsconfig.json',
+				declaration: false,
+			}),
+		],
+	},
+	{
 		input: 'src/test-keep-big-halftone.mts',
 		output: [
 			{

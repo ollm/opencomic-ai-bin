@@ -33,7 +33,7 @@ export type Formats =
 	| 'webp';
 
 export type ModelType = 'upscale' | 'descreen' | 'descreen-mask' | 'artifact-removal' | 'panels' | 'custom';
-export type Upscaler = 'realcugan' | 'waifu2x' | 'upscayl';
+export type Upscaler = 'upscayl';
 export type Speed = 'Very Fast' | 'Fast' | 'Medium' | 'Slow' | 'Very Slow';
 
 export interface UpscalerObject {
@@ -43,40 +43,6 @@ export interface UpscalerObject {
 }
 
 const upscalers: Record<Upscaler, UpscalerObject> = {
-	realcugan: {
-		name: 'RealCUGAN NCNN Vulkan',
-		binary: 'realcugan-ncnn-vulkan',
-		platforms: {
-			darwin: {
-				x64: 'mac/x64/realcugan/realcugan-ncnn-vulkan.app',
-				arm64: 'mac/arm64/realcugan/realcugan-ncnn-vulkan.app',
-			},
-			win32: {
-				x64: 'win/x64/realcugan/realcugan-ncnn-vulkan.exe',
-			},
-			linux: {
-				x64: 'linux/x64/realcugan/realcugan-ncnn-vulkan',
-				arm64: 'linux/arm64/realcugan/realcugan-ncnn-vulkan',
-			},
-		},
-	},
-	waifu2x: {
-		name: 'Waifu2x NCNN Vulkan',
-		binary: 'waifu2x-ncnn-vulkan',
-		platforms: {
-			darwin: {
-				x64: 'mac/x64/waifu2x/waifu2x-ncnn-vulkan.app',
-				arm64: 'mac/arm64/waifu2x/waifu2x-ncnn-vulkan.app',
-			},
-			win32: {
-				x64: 'win/x64/waifu2x/waifu2x-ncnn-vulkan.exe',
-			},
-			linux: {
-				x64: 'linux/x64/waifu2x/waifu2x-ncnn-vulkan',
-				arm64: 'linux/arm64/waifu2x/waifu2x-ncnn-vulkan',
-			},
-		},
-	},
 	upscayl: {
 		name: 'Upscayl',
 		binary: 'upscayl-bin',
@@ -97,6 +63,8 @@ const upscalers: Record<Upscaler, UpscalerObject> = {
 	},
 }
 
+export type ScaleFiles = Record<number, Model | Record<number, Model>>;
+
 export interface ModelObject {
 	key?: Model;
 	name: string;
@@ -105,8 +73,10 @@ export interface ModelObject {
 	tileSize?: number;
 	tileSizeFromMem?: number | string; // Model memory usage in MB measured at T:MB,... for auto tile estimation, if a number is provided it represents the memory usage at 128:Number
 	tileAlignment?: number; // Multiple to which tile input dimensions are padded, 1 disables alignment.
+	tileProfile?: string | Record<number, string>;
 	fp32?: boolean;
 	scales: number[];
+	scaleStrategy?: 'native' | 'iterative';
 	noise: number[] | undefined;
 	latency: number;
 	speed?: Speed;
@@ -114,7 +84,7 @@ export interface ModelObject {
 	folder: string;
 	path?: string;
 	files: string[];
-	scaleFiles?: Record<number, Model>;
+	scaleFiles?: ScaleFiles;
 	supportCurrentPlatform?: boolean;
 	custom?: boolean;
 }
@@ -131,6 +101,9 @@ const tileMemoryProfiles = {
 	ESRGAN_Upscale: '128:970,256:2963',
 	ESRGAN_LITE: '128:335,256:554,512:1654',
 	ESRGAN_LITE_Upscale: '128:455,256:1453,512:5382',
+	RealCUGAN: '128:224,256:382,512:1876,1024:5870',
+	Waifu2x_CUnet: '128:99,256:434,512:1587,1024:5941',
+	Waifu2x_UpConv: '128:79,256:240,512:860,1024:3377',
 };
 
 let models: Record<ModelType, Record<string, ModelObject>> = {
@@ -311,38 +284,26 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 				4: 'opencomic-ai-upscale-4x',
 			},
 		},
-		/*'realcugan-nose': {
-			name: 'RealCUGAN NoSE',
-			upscaper: 'realcugan',
-			scales: [2],
-			noise: [0, 3],
-			latency: 0,
-			folder: './realcugan/models-nose',
-			files: [],
-		},
-		'realcugan-pro': {
-			name: 'RealCUGAN Pro',
-			upscaper: 'realcugan',
-			scales: [1, 2, 3],
-			noise: [0, 3],
-			latency: 0,
-			folder: './realcugan/models-pro',
-			files: [],
-		},*/
 		'realcugan': {
 			name: 'RealCUGAN',
-			upscaler: 'realcugan',
-			scales: [/*1, */2, 3, 4],
-			noise: [0, 3],
+			upscaler: 'upscayl',
+			tileSizeFromMem: tileMemoryProfiles.RealCUGAN,
+			tileProfile: {
+				2: 'realcugan-x2',
+				3: 'realcugan-x3',
+				4: 'realcugan-x4',
+			},
+			scales: [2, 3, 4],
+			noise: [-1, 0, 3],
 			latency: 2.96,
-			folder: './realcugan/models-se',
+			folder: './realcugan/models',
 			files: [
 				'up2x-conservative.bin',
 				'up2x-conservative.param',
-				'up2x-denoise1x.bin',
+				/*'up2x-denoise1x.bin',
 				'up2x-denoise1x.param',
 				'up2x-denoise2x.bin',
-				'up2x-denoise2x.param',
+				'up2x-denoise2x.param',*/
 				'up2x-denoise3x.bin',
 				'up2x-denoise3x.param',
 				'up2x-no-denoise.bin',
@@ -360,6 +321,23 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 				'up4x-no-denoise.bin',
 				'up4x-no-denoise.param',
 			],
+			scaleFiles: {
+				2: {
+					'-1': 'up2x-conservative',
+					0: 'up2x-no-denoise',
+					3: 'up2x-denoise3x',
+				},
+				3: {
+					'-1': 'up3x-conservative',
+					0: 'up3x-no-denoise',
+					3: 'up3x-denoise3x',
+				},
+				4: {
+					'-1': 'up4x-conservative',
+					0: 'up4x-no-denoise',
+					3: 'up4x-denoise3x',
+				},
+			},
 		},
 		'realesr-animevideov3': {
 			name: 'RealESR AnimeVideo v3',
@@ -419,51 +397,67 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 		},
 		'waifu2x-models-cunet': {
 			name: 'Waifu2x CUnet',
-			upscaler: 'waifu2x',
-			scales: [/*1, */2, 4, 8, 16, 32],
-			noise: [0, 1, 2, 3],
+			upscaler: 'upscayl',
+			tileSizeFromMem: tileMemoryProfiles.Waifu2x_CUnet,
+			tileProfile: 'realcugan-x2',
+			scales: [2, 4, 8],
+			scaleStrategy: 'iterative',
+			noise: [-1, 0, 1, 2, 3],
 			latency: 5.2,
-			folder: './waifu2x/models-cunet',
+			folder: './waifu2x/models',
 			files: [
-				'noise0_model.bin',
-				'noise0_model.param',
-				'noise0_scale2.0x_model.bin',
-				'noise0_scale2.0x_model.param',
-				'noise1_model.bin',
-				'noise1_model.param',
-				'noise1_scale2.0x_model.bin',
-				'noise1_scale2.0x_model.param',
-				'noise2_model.bin',
-				'noise2_model.param',
-				'noise2_scale2.0x_model.bin',
-				'noise2_scale2.0x_model.param',
-				'noise3_model.bin',
-				'noise3_model.param',
-				'noise3_scale2.0x_model.bin',
-				'noise3_scale2.0x_model.param',
-				'scale2.0x_model.bin',
-				'scale2.0x_model.param',
+				'waifu2x-cunet-noise0_scale2.0x_model.bin',
+				'waifu2x-cunet-noise0_scale2.0x_model.param',
+				'waifu2x-cunet-noise1_scale2.0x_model.bin',
+				'waifu2x-cunet-noise1_scale2.0x_model.param',
+				'waifu2x-cunet-noise2_scale2.0x_model.bin',
+				'waifu2x-cunet-noise2_scale2.0x_model.param',
+				'waifu2x-cunet-noise3_scale2.0x_model.bin',
+				'waifu2x-cunet-noise3_scale2.0x_model.param',
+				'waifu2x-cunet-scale2.0x_model.bin',
+				'waifu2x-cunet-scale2.0x_model.param',
 			],
+			scaleFiles: {
+				2: {
+					'-1': 'waifu2x-cunet-scale2.0x_model',
+					0: 'waifu2x-cunet-noise0_scale2.0x_model',
+					1: 'waifu2x-cunet-noise1_scale2.0x_model',
+					2: 'waifu2x-cunet-noise2_scale2.0x_model',
+					3: 'waifu2x-cunet-noise3_scale2.0x_model',
+				},
+			}
 		},
 		'waifu2x-models-upconv': {
 			name: 'Waifu2x UpConv',
-			upscaler: 'waifu2x',
-			scales: [/*1, */2, 4, 8, 16, 32],
-			noise: [0, 1, 2, 3],
+			upscaler: 'upscayl',
+			tileSizeFromMem: tileMemoryProfiles.Waifu2x_UpConv,
+			tileProfile: 'waifu2x-upconv7-x2',
+			scales: [2, 4, 8],
+			scaleStrategy: 'iterative',
+			noise: [-1, 0, 1, 2, 3],
 			latency: 2.61,
-			folder: './waifu2x/models-upconv_7_anime_style_art_rgb',
+			folder: './waifu2x/models',
 			files: [
-				'noise0_scale2.0x_model.bin',
-				'noise0_scale2.0x_model.param',
-				'noise1_scale2.0x_model.bin',
-				'noise1_scale2.0x_model.param',
-				'noise2_scale2.0x_model.bin',
-				'noise2_scale2.0x_model.param',
-				'noise3_scale2.0x_model.bin',
-				'noise3_scale2.0x_model.param',
-				'scale2.0x_model.bin',
-				'scale2.0x_model.param',
+				'waifu2x-upconv-noise0_scale2.0x_model.bin',
+				'waifu2x-upconv-noise0_scale2.0x_model.param',
+				'waifu2x-upconv-noise1_scale2.0x_model.bin',
+				'waifu2x-upconv-noise1_scale2.0x_model.param',
+				'waifu2x-upconv-noise2_scale2.0x_model.bin',
+				'waifu2x-upconv-noise2_scale2.0x_model.param',
+				'waifu2x-upconv-noise3_scale2.0x_model.bin',
+				'waifu2x-upconv-noise3_scale2.0x_model.param',
+				'waifu2x-upconv-scale2.0x_model.bin',
+				'waifu2x-upconv-scale2.0x_model.param',
 			],
+			scaleFiles: {
+				2: {
+					'-1': 'waifu2x-upconv-scale2.0x_model',
+					0: 'waifu2x-upconv-noise0_scale2.0x_model',
+					1: 'waifu2x-upconv-noise1_scale2.0x_model',
+					2: 'waifu2x-upconv-noise2_scale2.0x_model',
+					3: 'waifu2x-upconv-noise3_scale2.0x_model',
+				},
+			}
 		},
 		'4x-WTP-ColorDS': {
 			name: 'WTP ColorDS',
@@ -1132,10 +1126,24 @@ const parseModels = (models: Record<string, ModelObject>, type: ModelType): Reco
 
 		if(model.scaleFiles)
 		{
-			for(const scale in model.scaleFiles)
+			const scaleFiles: ScaleFiles = model.scaleFiles;
+
+			for(const scale in scaleFiles)
 			{
-				const _model = model.scaleFiles[scale];
-				scalesModels[_model] = +scale;
+				const _model = scaleFiles[scale];
+
+				if(typeof _model === 'object')
+				{
+					for(const noise in _model)
+					{
+						const __model = _model[noise];
+						scalesModels[__model] = +scale;
+					}
+				}
+				else
+				{
+					scalesModels[_model] = +scale;
+				}
 			}
 		}
 	}
@@ -1161,8 +1169,9 @@ export type ModelCustom = string;
 
 export interface OpenComicAIOptions {
 	model?: Model;
-	noise?: 0 | 1 | 2 | 3;
+	noise?: -1 | 0 | 1 | 2 | 3;
 	scale?: number;
+	iterations?: number;
 	// format?: 'jpg' | 'png' | 'webp';
 	tileSize?: number | 'auto';
 	maxTileSize?: number;
@@ -1603,9 +1612,33 @@ export default class OpenComicAI {
 		if(!parsed.ext)
 			throw new Error(`Invalid destination file format. Expected an image file with an extension (e.g. .png, .jpg, .webp), but got: "${dest}"`);
 
-		for(let i = 0, len = steps.length; i < len; i++)
+		const expandedSteps: OpenComicAIOptions[] = [];
+
+		for(const step of steps)
 		{
-			const step = steps[i];
+			const modelInfo = step.model ? OpenComicAI.model(step.model) : null;
+
+			const scaleIterations = modelInfo?.scaleStrategy === 'iterative' && step.scale ? Math.ceil(Math.log2(step.scale)) : 1;
+			const iterations = Math.max(1, Math.min(step.iterations ?? 1, 3));
+
+			const totalIterations = scaleIterations * iterations;
+
+			if(totalIterations > 1)
+			{
+				for(let i = 0; i < totalIterations; i++)
+				{
+					expandedSteps.push({...step});
+				}
+			}
+			else
+			{
+				expandedSteps.push(step);
+			}
+		}
+
+		for(let i = 0, len = expandedSteps.length; i < len; i++)
+		{
+			const step = expandedSteps[i];
 			const intermediateDest = i < len - 1 ? OpenComicAI.intermediateDest(dest) : dest;
 
 			const _progress = (p: number | undefined) => {
@@ -1747,7 +1780,7 @@ export default class OpenComicAI {
 		const model = options.model;
 		// const format = options.format ?? p.extname(source).slice(1);
 		const threads: number | false = options.threads ? +options.threads : false;
-		let noise: number | false = options.noise ? +options.noise : false;
+		let noise: number | false = options.noise !== undefined ? +options.noise : false;
 		let scale: number | false = options.scale ? +options.scale : false;
 		let tileSize: string | false = options.tileSize?.toString() ?? false;
 		let tileSizeFromMem: string | false = false;
@@ -1759,12 +1792,24 @@ export default class OpenComicAI {
 
 		// Model Info only options
 		const tileAlignment: number | false = modelInfo.tileAlignment ? +modelInfo.tileAlignment : false;
+		let tileProfile: string | false;
 
 		if(noise !== false && !modelInfo?.noise?.includes(noise))
 			noise = modelInfo?.noise ? OpenComicAI.closest(modelInfo.noise, noise) : false;
 
 		if(scale && !modelInfo.scales.includes(scale))
 			scale = OpenComicAI.closest(modelInfo.scales, scale);
+
+		if(modelInfo.scaleStrategy === 'iterative' && scale && scale > 2)
+			scale = Math.min(...modelInfo.scales);
+
+		if(modelInfo.tileProfile)
+		{
+			if(typeof modelInfo.tileProfile === 'string')
+				tileProfile = modelInfo.tileProfile;
+			else if(typeof modelInfo.tileProfile === 'object' && scale && modelInfo.tileProfile[scale])
+				tileProfile = modelInfo.tileProfile[scale];
+		}
 
 		if(!tileSize || tileSize === 'auto')
 		{
@@ -1783,7 +1828,6 @@ export default class OpenComicAI {
 			'-m', modelInfo?.path as string,
 			// ...(format ? ['-f', format] : []),
 			...(threads ? ['-j', `${threads}:${threads}:${threads}`] : []),
-			...(noise !== false ? ['-n', noise.toString()] : []),
 			...(scale ? ['-s', scale.toString()] : []),
 			...(tileSize ? ['-t', tileSize] : []),
 			...(tileSizeFromMem ? ['-y', tileSizeFromMem] : []),
@@ -1793,22 +1837,11 @@ export default class OpenComicAI {
 			...(tta ? ['-x'] : []),
 			...(fp32 ? ['-p'] : []),
 			...(tileAlignment ? ['-A', tileAlignment.toString()] : []),
+			...(tileProfile ? ['--tile-profile', tileProfile] : []),
 		];
 
 		switch(modelInfo.upscaler)
 		{
-			case 'waifu2x':
-
-				// No additional args for waifu2x
-
-				break;
-
-			case 'realcugan':
-
-				// No additional args for realcugan
-
-				break;
-
 			case 'upscayl':
 
 				let modelName: Model = model;
@@ -1819,12 +1852,26 @@ export default class OpenComicAI {
 					if(!scale)
 						scale = Math.max(...modelInfo.scales);
 
-					modelName = modelInfo.scaleFiles[scale];
+					const scaleFiles: ScaleFiles = modelInfo.scaleFiles;
+					const _model = scaleFiles[scale];
+
+					if(typeof _model === 'object')
+					{
+						if(noise === false)
+							noise = Math.min(...(modelInfo.noise ?? [0]));
+
+						modelName = _model[noise];
+					}
+					else
+					{
+						modelName = _model;
+					}
+
 					modelScale = scale.toString();
 				}
 
 				args.push('-n', modelName);
-				args.push('-z', modelScale); // Set model scale, upscayl doesn't detect it correctly on Windows
+				args.push('-z', modelScale); // Set model scale, upscayl doesn't detect it correctly on Windows (This should be fixed now, see https://github.com/ollm/upscayl-ncnn/commit/fbffb8b9dcf95bbaca58c5542d3a4a7e48e244eb)
 
 				break;
 		}
@@ -1958,7 +2005,7 @@ export default class OpenComicAI {
 	private static spawnDaemon = async (binary: string, args: string[], modelInfo: ModelObject, spawn?: Spawn): Promise<void> => {
 
 		const singleFlags = ['-x', '-p'];
-		const initFlags = ['-m', '-n', '-g', '-z', '-t', '-y', '-u', '-k', '-p', '-A'];
+		const initFlags = ['-m', '-n', '-g', '-z', '-t', '-y', '-u', '-k', '-p', '-A', '--tile-profile'];
 
 		const initArgs: string[] = [];
 		const daemonArgs: string[] = [];
