@@ -685,6 +685,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			name: 'OpenComic AI Descreen Hard Fast v4 Preview',
 			upscaler: 'upscayl',
 			tileSizeFromMem: tileMemoryProfiles.MoSRV2_Multiscale_Fast,
+			tileAlignment: 16,
 			scales: [1],
 			noise: undefined,
 			latency: 0.82,
@@ -698,6 +699,7 @@ let models: Record<ModelType, Record<string, ModelObject>> = {
 			name: 'OpenComic AI Descreen Hard Balanced v4 Preview',
 			upscaler: 'upscayl',
 			tileSizeFromMem: tileMemoryProfiles.MoSRV2_Multiscale,
+			tileAlignment: 16,
 			scales: [1],
 			noise: undefined,
 			latency: 2.5,
@@ -1792,7 +1794,7 @@ export default class OpenComicAI {
 
 		// Model Info only options
 		const tileAlignment: number | false = modelInfo.tileAlignment ? +modelInfo.tileAlignment : false;
-		let tileProfile: string | false;
+		let tileProfile: string | false = false;
 
 		if(noise !== false && !modelInfo?.noise?.includes(noise))
 			noise = modelInfo?.noise ? OpenComicAI.closest(modelInfo.noise, noise) : false;
